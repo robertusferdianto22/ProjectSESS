@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SESS - Work Breakdown Structure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .view-toggle {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .wbs-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        /* Tree View Styles */
+        .wbs-tree {
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .wbs-level-0 {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .wbs-level-1 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .wbs-item-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wbs-item-1:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .wbs-item-1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+        }
+
+        .wbs-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wbs-code {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .wbs-description {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .wbs-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .wbs-level-2 {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .wbs-level-2.expanded {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .wbs-item-2 {
+            background: rgba(255,255,255,0.15);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wbs-item-2:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateX(5px);
+        }
+
+        .wbs-item-2-title {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .wbs-item-2-code {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+
+        .wbs-level-3 {
+            display: none;
+            margin-top: 10px;
+            margin-left: 20px;
+        }
+
+        .wbs-level-3.expanded {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .wbs-item-3 {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            border-left: 3px solid #ffd700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .expand-icon {
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .expand-icon.rotated {
+            transform: rotate(90deg);
+        }
+
+        /* Gantt View Styles */
+        .gantt-container {
+            display: none;
+            overflow-x: auto;
+        }
+
+        .gantt-container.active {
+            display: block;
+        }
+
+        .gantt-header {
+            display: grid;
+            grid-template-columns: 300px repeat(28, 50px);
+            gap: 1px;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .gantt-month {
+            text-align: center;
+            font-weight: bold;
+            color: #1e3c72;
+            grid-column: span 4;
+        }
+
+        .gantt-week {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+            padding: 5px;
+        }
+
+        .gantt-row {
+            display: grid;
+            grid-template-columns: 300px repeat(28, 50px);
+            gap: 1px;
+            margin-bottom: 5px;
+            align-items: center;
+        }
+
+        .gantt-task {
+            background: #f0f4ff;
+            padding: 10px;
+            border-left: 4px solid #667eea;
+            font-weight: 500;
+        }
+
+        .gantt-bar {
+            height: 30px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gantt-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+            width: 30%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
+        }
+
+        .phase-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .phase-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .phase-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .phase-4 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .phase-5 { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .phase-6 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .phase-7 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+        .phase-8 { background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%); }
+
+        /* Summary Statistics */
+        .wbs-summary {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f4f8 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .wbs-level-1 {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .view-toggle {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+            
+            .gantt-header,
+            .gantt-row {
+                grid-template-columns: 200px repeat(28, 40px);
+            }
+        }
+
+        .progress-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #ffd700;
+            border-radius: 0 0 12px 12px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 WORK BREAKDOWN STRUCTURE</h1>
+            <p>Smart Exam Surveillance System (SESS) - Struktur Pembagian Kerja</p>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Work Packages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">42</div>
+                    <div class="stat-label">Sub-deliverables</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">128</div>
+                    <div class="stat-label">Work Activities</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Bulan Timeline</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="control-btn active" onclick="expandAll()">📂 Expand All</button>
+            <button class="control-btn" onclick="collapseAll()">📁 Collapse All</button>
+            <button class="control-btn" onclick="filterByPhase('management')">🎯 Management</button>
+            <button class="control-btn" onclick="filterByPhase('development')">💻 Development</button>
+            <button class="control-btn" onclick="filterByPhase('implementation')">🚀 Implementation</button>
+            <button class="control-btn" onclick="showAll()">🔄 Show All</button>
+            
+            <div class="view-toggle">
+                <button class="control-btn active" onclick="switchView('tree')">🌳 Tree View</button>
+                <button class="control-btn" onclick="switchView('gantt')">📊 Gantt View</button>
+            </div>
+        </div>
+
+        <!-- WBS Summary -->
+        <div class="wbs-summary">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #1e3c72;">📈 Project Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-number">Rp 750M</div>
+                    <div class="summary-label">Total Budget</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number">2,100</div>
+                    <div class="summary-label">Total Work Hours</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number">8</div>
+                    <div class="summary-label">Team Members</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number">28</div>
+                    <div class="summary-label">Minggu Durasi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tree View -->
+        <div class="wbs-container">
+            <div id="treeView" class="wbs-tree">
+                <!-- Level 0 - Project -->
+                <div class="wbs-level-0">
+                    <div class="wbs-title">
+                        1.0 SMART EXAM SURVEILLANCE SYSTEM (SESS)
+                        <div class="wbs-code">PROJECT</div>
+                    </div>
+                </div>
+
+                <!-- Level 1 - Work Packages -->
+                <div class="wbs-level-1">
+                    <!-- 1.1 Project Management -->
+                    <div class="wbs-item-1 phase-management" data-phase="management" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.1 Project Management
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">PM</div>
+                        <div class="wbs-description">Koordinasi keseluruhan proyek, monitoring progress, dan pengelolaan risiko</div>
+                        <div class="wbs-stats">
+                            <span>📅 7 bulan</span>
+                            <span>💰 Rp 75M</span>
+                            <span>👥 2 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 15%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.1.1 Project Initiation</div>
+                                <div class="wbs-item-2-code">INIT</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.1.1.1 Project Charter Development</span>
+                                        <span>CHAR</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.1.2 Stakeholder Identification</span>
+                                        <span>STAK</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.1.3 Initial Risk Assessment</span>
+                                        <span>RISK</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.1.4 Project Kickoff Meeting</span>
+                                        <span>KICK</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.1.2 Project Planning</div>
+                                <div class="wbs-item-2-code">PLAN</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.1.2.1 Detailed Project Plan</span>
+                                        <span>DPLAN</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.2.2 Resource Allocation</span>
+                                        <span>RESO</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.2.3 Communication Plan</span>
+                                        <span>COMM</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.2.4 Quality Management Plan</span>
+                                        <span>QUAL</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.1.3 Project Monitoring & Control</div>
+                                <div class="wbs-item-2-code">MONI</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.1.3.1 Progress Tracking</span>
+                                        <span>PROG</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.3.2 Risk Monitoring</span>
+                                        <span>RMON</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.3.3 Change Control</span>
+                                        <span>CHNG</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.1.3.4 Status Reporting</span>
+                                        <span>STAT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.2 Requirements & Analysis -->
+                    <div class="wbs-item-1 phase-development" data-phase="development" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.2 Requirements & Analysis
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">REQ</div>
+                        <div class="wbs-description">Pengumpulan kebutuhan sistem dan analisis business process</div>
+                        <div class="wbs-stats">
+                            <span>📅 1 bulan</span>
+                            <span>💰 Rp 50M</span>
+                            <span>👥 3 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 25%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.2.1 Requirements Gathering</div>
+                                <div class="wbs-item-2-code">RGAT</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.2.1.1 Stakeholder Interviews</span>
+                                        <span>INTV</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.2.1.2 Current Process Documentation</span>
+                                        <span>PROC</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.2.1.3 Business Rules Definition</span>
+                                        <span>BRUL</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.2.1.4 User Story Creation</span>
+                                        <span>USER</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.2.2 System Analysis</div>
+                                <div class="wbs-item-2-code">SYAN</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.2.2.1 Gap Analysis</span>
+                                        <span>GAPA</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.2.2.2 Process Flow Mapping</span>
+                                        <span>FLOW</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.2.2.3 Data Flow Analysis</span>
+                                        <span>DATA</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.2.2.4 Integration Requirements</span>
+                                        <span>INTG</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.3 System Design & Architecture -->
+                    <div class="wbs-item-1 phase-development" data-phase="development" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.3 System Design & Architecture
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">ARCH</div>
+                        <div class="wbs-description">Desain arsitektur sistem, database, dan user interface</div>
+                        <div class="wbs-stats">
+                            <span>📅 1 bulan</span>
+                            <span>💰 Rp 80M</span>
+                            <span>👥 4 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 20%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.3.1 Technical Architecture</div>
+                                <div class="wbs-item-2-code">TECH</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.3.1.1 System Architecture Design</span>
+                                        <span>SYSA</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.3.1.2 Database Schema Design</span>
+                                        <span>DBSC</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.3.1.3 API Design</span>
+                                        <span>APID</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.3.1.4 Security Architecture</span>
+                                        <span>SECA</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.3.2 User Interface Design</div>
+                                <div class="wbs-item-2-code">UIDE</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.3.2.1 UX Design</span>
+                                        <span>UXDE</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.3.2.2 UI Mockups</span>
+                                        <span>MOCK</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.3.2.3 Responsive Design</span>
+                                        <span>RESP</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.3.2.4 Dashboard Design</span>
+                                        <span>DASH</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.4 AI Model Development -->
+                    <div class="wbs-item-1 phase-development" data-phase="development" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.4 AI Model Development
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">AI</div>
+                        <div class="wbs-description">Pengembangan dan training model AI untuk deteksi kecurangan</div>
+                        <div class="wbs-stats">
+                            <span>📅 2.5 bulan</span>
+                            <span>💰 Rp 200M</span>
+                            <span>👥 3 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 35%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.4.1 Data Preparation</div>
+                                <div class="wbs-item-2-code">PREP</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.4.1.1 Training Dataset Collection</span>
+                                        <span>TCOL</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.1.2 Data Labeling & Annotation</span>
+                                        <span>ANNO</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.1.3 Data Augmentation</span>
+                                        <span>AUGM</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.1.4 Dataset Validation</span>
+                                        <span>DVAL</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.4.2 Model Training</div>
+                                <div class="wbs-item-2-code">TRAIN</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.4.2.1 Algorithm Selection</span>
+                                        <span>ALGO</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.2.2 Model Training</span>
+                                        <span>MTRAIN</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.2.3 Hyperparameter Tuning</span>
+                                        <span>HYPER</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.2.4 Model Validation</span>
+                                        <span>MVAL</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.4.3 Model Optimization</div>
+                                <div class="wbs-item-2-code">OPTIM</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.4.3.1 Performance Optimization</span>
+                                        <span>PERF</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.3.2 Accuracy Improvement</span>
+                                        <span>ACCU</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.4.3.3 Model Deployment Prep</span>
+                                        <span>DEPL</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.5 System Development -->  
+                    <div class="wbs-item-1 phase-development" data-phase="development" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.5 System Development
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">DEV</div>
+                        <div class="wbs-description">Pengembangan aplikasi backend, frontend, dan integrasi sistem</div>
+                        <div class="wbs-stats">
+                            <span>📅 2 bulan</span>
+                            <span>💰 Rp 150M</span>
+                            <span>👥 4 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 40%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.5.1 Backend Development</div>
+                                <div class="wbs-item-2-code">BACK</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.5.1.1 Core Framework Setup</span>
+                                        <span>FRAM</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.1.2 Database Implementation</span>
+                                        <span>DBIM</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.1.3 API Development</span>
+                                        <span>APIM</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.1.4 Security Implementation</span>
+                                        <span>SECM</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.5.2 Frontend Development</div>
+                                <div class="wbs-item-2-code">FRON</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.5.2.1 Dashboard Implementation</span>
+                                        <span>DASI</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.2.2 User Interface Development</span>
+                                        <span>UIIM</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.2.3 Real-time Features</span>
+                                        <span>REAL</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.2.4 Responsive Implementation</span>
+                                        <span>RESI</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.5.3 System Integration</div>
+                                <div class="wbs-item-2-code">INTG</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.5.3.1 AI Model Integration</span>
+                                        <span>AINT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.3.2 Camera Integration</span>
+                                        <span>CINT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.3.3 Database Integration</span>
+                                        <span>DINT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.5.3.4 Third-party APIs</span>
+                                        <span>TAPI</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.6 Testing & Quality Assurance -->
+                    <div class="wbs-item-1 phase-implementation" data-phase="implementation" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.6 Testing & Quality Assurance
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">TEST</div>
+                        <div class="wbs-description">Testing comprehensive sistem dan quality assurance</div>
+                        <div class="wbs-stats">
+                            <span>📅 1 bulan</span>
+                            <span>💰 Rp 75M</span>
+                            <span>👥 3 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 60%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.6.1 Test Planning</div>
+                                <div class="wbs-item-2-code">TPLA</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.6.1.1 Test Strategy Development</span>
+                                        <span>TSTR</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.1.2 Test Case Creation</span>
+                                        <span>TCAS</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.1.3 Test Data Preparation</span>
+                                        <span>TDAT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.1.4 Test Environment Setup</span>
+                                        <span>TENV</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.6.2 Testing Execution</div>
+                                <div class="wbs-item-2-code">TEXE</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.6.2.1 Unit Testing</span>
+                                        <span>UNIT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.2.2 Integration Testing</span>
+                                        <span>INTE</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.2.3 System Testing</span>
+                                        <span>SYST</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.2.4 User Acceptance Testing</span>
+                                        <span>UAT</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.6.3 Quality Assurance</div>
+                                <div class="wbs-item-2-code">QA</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.6.3.1 Performance Testing</span>
+                                        <span>PERT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.3.2 Security Testing</span>
+                                        <span>SECT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.3.3 Usability Testing</span>
+                                        <span>USAB</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.6.3.4 Load Testing</span>
+                                        <span>LOAD</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.7 Training & Change Management -->
+                    <div class="wbs-item-1 phase-implementation" data-phase="implementation" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.7 Training & Change Management
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">TRAIN</div>
+                        <div class="wbs-description">Pelatihan pengguna dan manajemen perubahan organisasi</div>
+                        <div class="wbs-stats">
+                            <span>📅 1 bulan</span>
+                            <span>💰 Rp 60M</span>
+                            <span>👥 2 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 10%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.7.1 Training Development</div>
+                                <div class="wbs-item-2-code">TDEV</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.7.1.1 Training Material Creation</span>
+                                        <span>TMAT</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.1.2 User Manual Development</span>
+                                        <span>UMAN</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.1.3 Video Tutorial Production</span>
+                                        <span>VIDE</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.1.4 Training Environment Setup</span>
+                                        <span>TSET</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.7.2 Training Delivery</div>
+                                <div class="wbs-item-2-code">TDEL</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.7.2.1 Admin Staff Training</span>
+                                        <span>ADTR</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.2.2 Teacher Training Sessions</span>
+                                        <span>TETR</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.2.3 IT Staff Training</span>
+                                        <span>ITTR</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.2.4 End User Certification</span>
+                                        <span>CERT</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.7.3 Change Management</div>
+                                <div class="wbs-item-2-code">CHNG</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.7.3.1 Change Impact Assessment</span>
+                                        <span>CIAS</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.3.2 Communication Campaign</span>
+                                        <span>CAMP</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.3.3 User Adoption Monitoring</span>
+                                        <span>ADOP</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.7.3.4 Resistance Management</span>
+                                        <span>RESI</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.8 Deployment & Go-Live -->
+                    <div class="wbs-item-1 phase-implementation" data-phase="implementation" onclick="toggleExpand(this)">
+                        <div class="wbs-title">
+                            1.8 Deployment & Go-Live
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="wbs-code">DEPLOY</div>
+                        <div class="wbs-description">Deployment sistem ke production dan go-live support</div>
+                        <div class="wbs-stats">
+                            <span>📅 1 bulan</span>
+                            <span>💰 Rp 50M</span>
+                            <span>👥 4 orang</span>
+                        </div>
+                        <div class="progress-indicator" style="width: 5%;"></div>
+                        
+                        <div class="wbs-level-2">
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.8.1 Pre-Deployment</div>
+                                <div class="wbs-item-2-code">PRED</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.8.1.1 Production Environment Setup</span>
+                                        <span>PROD</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.1.2 Go-Live Readiness Assessment</span>
+                                        <span>READY</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.1.3 Backup & Rollback Procedures</span>
+                                        <span>BACK</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.1.4 Support Team Preparation</span>
+                                        <span>SUPP</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.8.2 Deployment Execution</div>
+                                <div class="wbs-item-2-code">EXEC</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.8.2.1 System Deployment</span>
+                                        <span>SYSD</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.2.2 Data Migration</span>
+                                        <span>MIGR</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.2.3 System Configuration</span>
+                                        <span>CONF</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.2.4 Go-Live Activities</span>
+                                        <span>LIVE</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wbs-item-2" onclick="toggleExpand(this, event)">
+                                <div class="wbs-item-2-title">1.8.3 Post Go-Live Support</div>
+                                <div class="wbs-item-2-code">POST</div>
+                                <span class="expand-icon">▶</span>
+                                
+                                <div class="wbs-level-3">
+                                    <div class="wbs-item-3">
+                                        <span>1.8.3.1 Hypercare Support (Week 1-2)</span>
+                                        <span>HYPER</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.3.2 Issue Resolution & Bug Fixes</span>
+                                        <span>ISSUE</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.3.3 Performance Monitoring</span>
+                                        <span>PMON</span>
+                                    </div>
+                                    <div class="wbs-item-3">
+                                        <span>1.8.3.4 User Support & Help Desk</span>
+                                        <span>HELP</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt View -->
+            <div id="ganttView" class="gantt-container">
+                <div class="gantt-header">
+                    <div></div>
+                    <div class="gantt-month">Agustus 2025</div>
+                    <div class="gantt-month">September 2025</div>
+                    <div class="gantt-month">Oktober 2025</div>
+                    <div class="gantt-month">November 2025</div>
+                    <div class="gantt-month">Desember 2025</div>
+                    <div class="gantt-month">Januari 2026</div>
+                    <div class="gantt-month">Februari 2026</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.1 Project Management</div>
+                    <div class="gantt-bar phase-1" style="grid-column: 2 / 29;">Project Management</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.2 Requirements & Analysis</div>
+                    <div class="gantt-bar phase-2" style="grid-column: 2 / 6;">Requirements</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.3 System Design</div>
+                    <div class="gantt-bar phase-3" style="grid-column: 6 / 10;">Design</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.4 AI Model Development</div>
+                    <div class="gantt-bar phase-4" style="grid-column: 8 / 18;">AI Development</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.5 System Development</div>
+                    <div class="gantt-bar phase-5" style="grid-column: 14 / 22;">System Dev</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.6 Testing & QA</div>
+                    <div class="gantt-bar phase-6" style="grid-column: 20 / 26;">Testing</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.7 Training & Change Mgmt</div>
+                    <div class="gantt-bar phase-7" style="grid-column: 24 / 28;">Training</div>
+                </div>
+                
+                <div class="gantt-row">
+                    <div class="gantt-task">1.8 Deployment & Go-Live</div>
+                    <div class="gantt-bar phase-8" style="grid-column: 26 / 29;">Deploy</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleExpand(element, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            const level2 = element.querySelector('.wbs-level-2');
+            const level3 = element.querySelector('.wbs-level-3');
+            const icon = element.querySelector('.expand-icon');
+            
+            if (level2) {
+                level2.classList.toggle('expanded');
+                icon.classList.toggle('rotated');
+            } else if (level3) {
+                level3.classList.toggle('expanded');
+                icon.classList.toggle('rotated');
+            }
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.wbs-level-2, .wbs-level-3').forEach(el => {
+                el.classList.add('expanded');
+            });
+            document.querySelectorAll('.expand-icon').forEach(icon => {
+                icon.classList.add('rotated');
+            });
+            
+            // Update button state
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.wbs-level-2, .wbs-level-3').forEach(el => {
+                el.classList.remove('expanded');
+            });
+            document.querySelectorAll('.expand-icon').forEach(icon => {
+                icon.classList.remove('rotated');
+            });
+            
+            // Update button state
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function filterByPhase(phase) {
+            document.querySelectorAll('.wbs-item-1').forEach(item => {
+                if (item.dataset.phase === phase) {
+                    item.style.display = 'block';
+                    item.style.opacity = '1';
+                } else {
+                    item.style.display = 'none';
+                    item.style.opacity = '0.3';
+                }
+            });
+            
+            // Update button state
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function showAll() {
+            document.querySelectorAll('.wbs-item-1').forEach(item => {
+                item.style.display = 'block';
+                item.style.opacity = '1';
+            });
+            
+            // Update button state
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function switchView(view) {
+            const treeView = document.getElementById('treeView');
+            const ganttView = document.getElementById('ganttView');
+            const buttons = document.querySelectorAll('.view-toggle .control-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (view === 'tree') {
+                treeView.style.display = 'block';
+                ganttView.classList.remove('active');
+                buttons[0].classList.add('active');
+            } else {
+                treeView.style.display = 'none';
+                ganttView.classList.add('active');
+                buttons[1].classList.add('active');
+            }
+        }
+
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate progress bars
+            const progressBars = document.querySelectorAll('.progress-indicator');
+            progressBars.forEach((bar, index) => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, index * 200);
+            });
+
+            // Add hover effects
+            document.querySelectorAll('.wbs-item-1').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

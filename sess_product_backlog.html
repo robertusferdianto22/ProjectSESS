@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SESS Product Backlog & Agile Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .sprint-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .dashboard-nav {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .filters {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .content-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-content {
+            padding: 30px;
+            display: none;
+        }
+
+        .view-content.active {
+            display: block;
+        }
+
+        /* Backlog View */
+        .backlog-view {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: 600px;
+        }
+
+        .epic-sidebar {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .epic-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .epic-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .epic-item.active {
+            border-color: #4caf50;
+            background: #e8f5e8;
+        }
+
+        .epic-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 8px;
+        }
+
+        .epic-stats {
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stories-container {
+            overflow-y: auto;
+        }
+
+        .story-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .story-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .story-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .story-id {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .story-title {
+            font-weight: 600;
+            color: #1e3c72;
+            margin: 8px 0;
+            flex: 1;
+        }
+
+        .story-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .story-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .story-points {
+            background: #ff9800;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .story-priority {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .priority-critical { background: #ffebee; color: #c62828; }
+        .priority-high { background: #fff3e0; color: #ef6c00; }
+        .priority-medium { background: #e8f5e8; color: #2e7d32; }
+        .priority-low { background: #e3f2fd; color: #1565c0; }
+
+        .story-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .status-todo { background: #f5f5f5; color: #666; }
+        .status-progress { background: #e3f2fd; color: #1976d2; }
+        .status-review { background: #fff3e0; color: #f57c00; }
+        .status-done { background: #e8f5e8; color: #388e3c; }
+
+        /* Kanban Board */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            height: 600px;
+        }
+
+        .kanban-column {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column-header {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .story-count {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .kanban-stories {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .kanban-story {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+
+        .kanban-story:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .kanban-story.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        /* Sprint Planning */
+        .sprint-planning {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            height: 600px;
+        }
+
+        .planning-main {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sprint-selector {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sprint-info {
+            background: #e8f4f8;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .capacity-meter {
+            margin: 20px 0;
+        }
+
+        .capacity-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .capacity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ff9800, #f44336);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* Burndown Chart */
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .ideal-line { stroke: #4caf50; stroke-dasharray: 5,5; }
+        .actual-line { stroke: #2196f3; }
+
+        .chart-point {
+            fill: #2196f3;
+            stroke: white;
+            stroke-width: 2;
+            cursor: pointer;
+        }
+
+        .chart-point:hover {
+            r: 6;
+            fill: #1976d2;
+        }
+
+        /* Story Mapping */
+        .story-map {
+            overflow: auto;
+            height: 600px;
+        }
+
+        .map-container {
+            min-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .map-column {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 500px;
+        }
+
+        .map-header {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .map-story {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .map-story:hover {
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .map-story.epic {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .map-story.release-1 { border-left: 4px solid #4caf50; }
+        .map-story.release-2 { border-left: 4px solid #ff9800; }
+        .map-story.release-3 { border-left: 4px solid #f44336; }
+
+        /* Velocity Chart */
+        .velocity-chart {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        .velocity-bars {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            height: 300px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .velocity-bar {
+            width: 40px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .velocity-bar:hover {
+            background: linear-gradient(to top, #4caf50, #45a049);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .backlog-view,
+            .sprint-planning {
+                grid-template-columns: 1fr;
+            }
+            
+            .kanban-board {
+                grid-template-columns: repeat(2, 1fr);
+                height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filters {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .acceptance-criteria {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .criteria-item {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .criteria-item::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📋 PRODUCT BACKLOG & AGILE DASHBOARD</h1>
+            <p>Smart Exam Surveillance System (SESS) - Agile Project Management</p>
+            
+            <div class="sprint-stats">
+                <div class="stat-card">
+                    <div class="stat-number">124</div>
+                    <div class="stat-label">Total Stories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">342</div>
+                    <div class="stat-label">Story Points</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Sprints Planned</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">28</div>
+                    <div class="stat-label">Velocity (avg)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Epics</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">85%</div>
+                    <div class="stat-label">Sprint Goal Achievement</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="dashboard-nav">
+            <button class="nav-btn active" onclick="switchView('backlog')">📋 Product Backlog</button>
+            <button class="nav-btn" onclick="switchView('kanban')">📊 Kanban Board</button>
+            <button class="nav-btn" onclick="switchView('sprint')">🏃 Sprint Planning</button>
+            <button class="nav-btn" onclick="switchView('burndown')">📈 Burndown Chart</button>
+            <button class="nav-btn" onclick="switchView('story-map')">🗺️ Story Mapping</button>
+            <button class="nav-btn" onclick="switchView('velocity')">⚡ Velocity Tracking</button>
+            
+            <div class="filters">
+                <select class="filter-select" id="priorityFilter" onchange="filterStories()">
+                    <option value="">All Priorities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                
+                <select class="filter-select" id="statusFilter" onchange="filterStories()">
+                    <option value="">All Status</option>
+                    <option value="todo">To Do</option>
+                    <option value="progress">In Progress</option>
+                    <option value="review">In Review</option>
+                    <option value="done">Done</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h2 id="viewTitle">📋 Product Backlog</h2>
+                <div>
+                    <button class="nav-btn" onclick="addNewStory()">➕ Add Story</button>
+                    <button class="nav-btn" onclick="exportBacklog()">📤 Export</button>
+                </div>
+            </div>
+
+            <!-- Product Backlog View -->
+            <div id="backlogView" class="view-content active">
+                <div class="backlog-view">
+                    <div class="epic-sidebar">
+                        <h3 style="margin-bottom: 15px; color: #1e3c72;">📚 Epics</h3>
+                        
+                        <div class="epic-item active" data-epic="all">
+                            <div class="epic-title">🌟 All Stories</div>
+                            <div class="epic-stats">
+                                <span>124 stories</span>
+                                <span>342 pts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="epic-item" data-epic="ai-engine">
+                            <div class="epic-title">🤖 AI Surveillance Engine</div>
+                            <div class="epic-stats">
+                                <span>24 stories</span>
+                                <span>89 pts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="epic-item" data-epic="dashboard">
+                            <div class="epic-title">💻 Web Dashboard</div>
+                            <div class="epic-stats">
+                                <span>18 stories</span>
+                                <span>52 pts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="epic-item" data-epic="reporting">
+                            <div class="epic-title">📊 Reporting Module</div>
+                            <div class="epic-stats">
+                                <span>15 stories</span>
+                                <span>38 pts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="epic-item" data-epic="integration">
+                            <div class="epic-title">🔌 System Integration</div>
+                            <div class="epic-stats">
+                                <span>22 stories</span>
+                                <span>67 pts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="epic-item" data-epic="training">
+                            <div class="epic-title">📚 Training & Documentation</div>
+                            <div class="epic-stats">
+                                <span>16 stories</span>
+                                <span>34 pts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="epic-item" data-epic="deployment">
+                            <div class="epic-title">🚀 Deployment & Support</div>
+                            <div class="epic-stats">
+                                <span>12 stories</span>
+                                <span>28 pts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="epic-item" data-epic="security">
+                            <div class="epic-title">🔒 Security & Compliance</div>
+                            <div class="epic-stats">
+                                <span>17 stories</span>
+                                <span>34 pts</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stories-container" id="storiesContainer">
+                        <!-- Stories will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kanban Board View -->
+            <div id="kanbanView" class="view-content">
+                <div class="kanban-board">
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            📝 To Do
+                            <span class="story-count">24</span>
+                        </div>
+                        <div class="kanban-stories" id="todoColumn">
+                            <!-- Stories populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            🔄 In Progress
+                            <span class="story-count">8</span>
+                        </div>
+                        <div class="kanban-stories" id="progressColumn">
+                            <!-- Stories populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            👀 In Review
+                            <span class="story-count">5</span>
+                        </div>
+                        <div class="kanban-stories" id="reviewColumn">
+                            <!-- Stories populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            ✅ Done
+                            <span class="story-count">12</span>
+                        </div>
+                        <div class="kanban-stories" id="doneColumn">
+                            <!-- Stories populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sprint Planning View -->
+            <div id="sprintView" class="view-content">
+                <div class="sprint-planning">
+                    <div class="planning-main">
+                        <div class="sprint-selector">
+                            <div>
+                                <h3>Sprint 3 Planning</h3>
+                                <p>15 Oktober - 28 Oktober 2025</p>
+                            </div>
+                            <div>
+                                <button class="nav-btn">⬅️ Previous</button>
+                                <button class="nav-btn">Next ➡️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h4 style="text-align: center; margin: 15px;">📈 Sprint Capacity Planning</h4>
+                            <svg class="chart-svg" id="capacityChart">
+                                <!-- Capacity visualization -->
+                                <rect x="50" y="50" width="500" height="250" fill="#f8f9ff" stroke="#e0e0e0" rx="10"/>
+                                
+                                <!-- Team member capacity bars -->
+                                <rect x="80" y="200" width="30" height="80" fill="#4caf50" rx="4"/>
+                                <text x="95" y="295" text-anchor="middle" font-size="12">Dev1</text>
+                                <text x="95" y="195" text-anchor="middle" font-size="10">40h</text>
+                                
+                                <rect x="130" y="180" width="30" height="100" fill="#4caf50" rx="4"/>
+                                <text x="145" y="295" text-anchor="middle" font-size="12">Dev2</text>
+                                <text x="145" y="175" text-anchor="middle" font-size="10">50h</text>
+                                
+                                <rect x="180" y="220" width="30" height="60" fill="#ff9800" rx="4"/>
+                                <text x="195" y="295" text-anchor="middle" font-size="12">QA</text>
+                                <text x="195" y="215" text-anchor="middle" font-size="10">30h</text>
+                                
+                                <rect x="230" y="160" width="30" height="120" fill="#4caf50" rx="4"/>
+                                <text x="245" y="295" text-anchor="middle" font-size="12">UI/UX</text>
+                                <text x="245" y="155" text-anchor="middle" font-size="10">60h</text>
+                                
+                                <rect x="280" y="190" width="30" height="90" fill="#4caf50" rx="4"/>
+                                <text x="295" y="295" text-anchor="middle" font-size="12">BA</text>
+                                <text x="295" y="185" text-anchor="middle" font-size="10">45h</text>
+                                
+                                <!-- Total capacity line -->
+                                <line x1="350" y1="100" x2="350" y2="250" stroke="#667eea" stroke-width="3"/>
+                                <text x="360" y="175" font-size="14" fill="#667eea">Total: 225h</text>
+                                
+                                <!-- Story points commitment -->
+                                <rect x="400" y="120" width="100" height="30" fill="#2196f3" rx="15"/>
+                                <text x="450" y="140" text-anchor="middle" fill="white" font-weight="bold">32 Story Points</text>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="sprint-info">
+                        <h4 style="color: #1e3c72; margin-bottom: 15px;">🎯 Sprint Goal</h4>
+                        <p style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            "Complete AI model training phase and implement core detection algorithms with 85% accuracy target."
+                        </p>
+                        
+                        <div class="capacity-meter">
+                            <h5>📊 Capacity Utilization</h5>
+                            <div class="capacity-bar">
+                                <div class="capacity-fill" style="width: 78%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 5px;">
+                                <span>Used: 175h</span>
+                                <span>Total: 225h</span>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <h5 style="margin-bottom: 10px;">📋 Sprint Commitments</h5>
+                            <div style="font-size: 0.9rem;">
+                                <div style="margin: 5px 0;">✅ 8 stories committed</div>
+                                <div style="margin: 5px 0;">📊 32 story points</div>
+                                <div style="margin: 5px 0;">⏱️ 175 hours estimated</div>
+                                <div style="margin: 5px 0;">👥 5 team members</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #ff9800;">
+                            <h6 style="color: #e65100; margin-bottom: 8px;">⚠️ Sprint Risks</h6>
+                            <div style="font-size: 0.8rem; color: #666;">
+                                <div>• AI model complexity uncertainty</div>
+                                <div>• External API dependency</div>
+                                <div>• Training data availability</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Burndown Chart View -->
+            <div id="burndownView" class="view-content">
+                <div class="chart-container" style="height: 500px;">
+                    <h3 style="text-align: center; margin: 20px;">📈 Sprint Burndown Chart - Sprint 2</h3>
+                    <svg class="chart-svg" id="burndownChart">
+                        <!-- Grid lines -->
+                        <defs>
+                            <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
+                                <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect x="60" y="40" width="520" height="360" fill="url(#grid)"/>
+                        
+                        <!-- Axes -->
+                        <line x1="60" y1="400" x2="580" y2="400" stroke="#666" stroke-width="2"/>
+                        <line x1="60" y1="400" x2="60" y2="40" stroke="#666" stroke-width="2"/>
+                        
+                        <!-- Y-axis labels (Story Points) -->
+                        <text x="30" y="405" text-anchor="middle" font-size="12">0</text>
+                        <text x="30" y="325" text-anchor="middle" font-size="12">10</text>
+                        <text x="30" y="245" text-anchor="middle" font-size="12">20</text>
+                        <text x="30" y="165" text-anchor="middle" font-size="12">30</text>
+                        <text x="30" y="85" text-anchor="middle" font-size="12">40</text>
+                        
+                        <!-- X-axis labels (Days) -->
+                        <text x="100" y="420" text-anchor="middle" font-size="12">Day 1</text>
+                        <text x="180" y="420" text-anchor="middle" font-size="12">Day 3</text>
+                        <text x="260" y="420" text-anchor="middle" font-size="12">Day 5</text>
+                        <text x="340" y="420" text-anchor="middle" font-size="12">Day 7</text>
+                        <text x="420" y="420" text-anchor="middle" font-size="12">Day 9</text>
+                        <text x="500" y="420" text-anchor="middle" font-size="12">Day 11</text>
+                        
+                        <!-- Ideal burndown line -->
+                        <line x1="60" y1="80" x2="520" y2="400" stroke="#4caf50" stroke-width="3" stroke-dasharray="5,5"/>
+                        
+                        <!-- Actual burndown line -->
+                        <polyline points="60,80 100,95 140,120 180,140 220,160 260,185 300,200 340,220 380,245" 
+                                  fill="none" stroke="#2196f3" stroke-width="4"/>
+                        
+                        <!-- Data points -->
+                        <circle cx="60" cy="80" r="4" class="chart-point"/>
+                        <circle cx="100" cy="95" r="4" class="chart-point"/>
+                        <circle cx="140" cy="120" r="4" class="chart-point"/>
+                        <circle cx="180" cy="140" r="4" class="chart-point"/>
+                        <circle cx="220" cy="160" r="4" class="chart-point"/>
+                        <circle cx="260" cy="185" r="4" class="chart-point"/>
+                        <circle cx="300" cy="200" r="4" class="chart-point"/>
+                        <circle cx="340" cy="220" r="4" class="chart-point"/>
+                        <circle cx="380" cy="245" r="4" class="chart-point"/>
+                        
+                        <!-- Current progress indicator -->
+                        <line x1="380" y1="40" x2="380" y2="400" stroke="#f44336" stroke-width="2" stroke-dasharray="3,3"/>
+                        <text x="385" y="30" font-size="12" fill="#f44336">Today</text>
+                        
+                        <!-- Labels -->
+                        <text x="320" y="25" text-anchor="middle" font-size="16" font-weight="bold">Sprint 2 Burndown</text>
+                        <text x="150" y="120" font-size="12" fill="#4caf50">Ideal</text>
+                        <text x="250" y="170" font-size="12" fill="#2196f3">Actual</text>
+                    </svg>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #2e7d32;">18</div>
+                        <div style="color: #666;">Remaining Story Points</div>
+                    </div>
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #1976d2;">5</div>
+                        <div style="color: #666;">Days Remaining</div>
+                    </div>
+                    <div style="background: #fff3e0; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #f57c00;">3.6</div>
+                        <div style="color: #666;">Avg Daily Velocity</div>
+                    </div>
+                    <div style="background: #ffebee; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #d32f2f;">-2</div>
+                        <div style="color: #666;">Days Behind Schedule</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story Mapping View -->
+            <div id="storyMapView" class="view-content">
+                <div class="story-map">
+                    <div class="map-container">
+                        <div class="map-column">
+                            <div class="map-header">🎯 User Activities</div>
+                            <div class="map-story epic">Login & Authentication</div>
+                            <div class="map-story epic">Exam Setup</div>
+                            <div class="map-story epic">Live Monitoring</div>
+                            <div class="map-story epic">Alert Management</div>
+                            <div class="map-story epic">Reporting</div>
+                            <div class="map-story epic">System Admin</div>
+                        </div>
+                        
+                        <div class="map-column">
+                            <div class="map-header">📋 User Stories</div>
+                            <div class="map-story release-1">User login with credentials</div>
+                            <div class="map-story release-1">Create exam session</div>
+                            <div class="map-story release-1">View live camera feeds</div>
+                            <div class="map-story release-1">Receive cheating alerts</div>
+                            <div class="map-story release-2">Generate exam reports</div>
+                            <div class="map-story release-3">Manage user accounts</div>
+                        </div>
+                        
+                        <div class="map-column">
+                            <div class="map-header">🚀 Release 1 (MVP)</div>
+                            <div class="map-story release-1">Basic login system</div>
+                            <div class="map-story release-1">Simple exam creation</div>
+                            <div class="map-story release-1">Camera feed display</div>
+                            <div class="map-story release-1">Basic AI detection</div>
+                            <div class="map-story release-1">Simple alerts</div>
+                            <div class="map-story release-1">Basic reports</div>
+                        </div>
+                        
+                        <div class="map-column">
+                            <div class="map-header">⭐ Release 2</div>
+                            <div class="map-story release-2">SSO integration</div>
+                            <div class="map-story release-2">Advanced exam settings</div>
+                            <div class="map-story release-2">Multi-camera support</div>
+                            <div class="map-story release-2">Enhanced AI accuracy</div>
+                            <div class="map-story release-2">Alert customization</div>
+                            <div class="map-story release-2">Detailed analytics</div>
+                        </div>
+                        
+                        <div class="map-column">
+                            <div class="map-header">🎨 Release 3</div>
+                            <div class="map-story release-3">Biometric login</div>
+                            <div class="map-story release-3">Automated scheduling</div>
+                            <div class="map-story release-3">AI behavior prediction</div>
+                            <div class="map-story release-3">Smart notifications</div>
+                            <div class="map-story release-3">Predictive analytics</div>
+                            <div class="map-story release-3">Advanced user mgmt</div>
+                        </div>
+                        
+                        <div class="map-column">
+                            <div class="map-header">🔮 Future Ideas</div>
+                            <div class="map-story">Mobile app support</div>
+                            <div class="map-story">Voice command integration</div>
+                            <div class="map-story">Machine learning insights</div>
+                            <div class="map-story">Integration with LMS</div>
+                            <div class="map-story">Real-time collaboration</div>
+                            <div class="map-story">Advanced security features</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Velocity Tracking View -->
+            <div id="velocityView" class="view-content">
+                <div class="velocity-chart">
+                    <div>
+                        <h3 style="text-align: center; margin-bottom: 20px;">⚡ Team Velocity Tracking</h3>
+                        <div class="velocity-bars">
+                            <div class="velocity-bar" style="height: 80%;">
+                                <div class="bar-label">Sprint 1</div>
+                                <div class="bar-value">24</div>
+                            </div>
+                            <div class="velocity-bar" style="height: 90%;">
+                                <div class="bar-label">Sprint 2</div>
+                                <div class="bar-value">27</div>
+                            </div>
+                            <div class="velocity-bar" style="height: 100%;">
+                                <div class="bar-label">Sprint 3</div>
+                                <div class="bar-value">30</div>
+                            </div>
+                            <div class="velocity-bar" style="height: 85%;">
+                                <div class="bar-label">Sprint 4</div>
+                                <div class="bar-value">25</div>
+                            </div>
+                            <div class="velocity-bar" style="height: 95%;">
+                                <div class="bar-label">Sprint 5</div>
+                                <div class="bar-value">28</div>
+                            </div>
+                            <div class="velocity-bar" style="height: 75%; background: linear-gradient(to top, #ddd, #bbb);">
+                                <div class="bar-label">Sprint 6</div>
+                                <div class="bar-value">?</div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 20px;">
+                            <div style="background: #f8f9ff; padding: 20px; border-radius: 10px; display: inline-block;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #1e3c72;">26.8</div>
+                                <div style="color: #666;">Average Velocity</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 10px;">
+                        <h4 style="color: #1e3c72; margin-bottom: 15px;">📊 Velocity Insights</h4>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h5 style="color: #4caf50; margin-bottom: 8px;">✅ Positive Trends</h5>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                <div>• Consistent delivery improvement</div>
+                                <div>• Team learning curve stabilizing</div>
+                                <div>• Better story estimation accuracy</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h5 style="color: #ff9800; margin-bottom: 8px;">⚠️ Areas to Watch</h5>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                <div>• Sprint 4 velocity drop</div>
+                                <div>• Scope creep in complex stories</div>
+                                <div>• External dependency delays</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px;">
+                            <h5 style="color: #2196f3; margin-bottom: 8px;">🎯 Recommendations</h5>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                <div>• Target 28-30 points per sprint</div>
+                                <div>• Improve story breakdown</div>
+                                <div>• Focus on definition of done</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Story Detail Modal -->
+    <div id="storyModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="storyDetails">
+                <!-- Story details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for stories
+        const stories = [
+            {
+                id: "SESS-001",
+                title: "As a system admin, I want to configure AI detection parameters",
+                description: "Enable configuration of sensitivity levels, alert thresholds, and detection algorithms through admin interface",
+                epic: "ai-engine",
+                priority: "critical",
+                status: "progress",
+                points: 8,
+                assignee: "John Doe",
+                acceptanceCriteria: [
+                    "Admin can access AI configuration panel",
+                    "Sensitivity levels can be adjusted (1-10 scale)",
+                    "Alert thresholds are configurable per behavior type",
+                    "Changes are saved and applied to live detection",
+                    "Configuration audit trail is maintained"
+                ],
+                tags: ["backend", "ai", "configuration"]
+            },
+            {
+                id: "SESS-002", 
+                title: "As a teacher, I want to view real-time camera feeds during exams",
+                description: "Display multiple camera feeds in a grid layout with zoom and pan capabilities",
+                epic: "dashboard",
+                priority: "high",
+                status: "todo",
+                points: 5,
+                assignee: "Jane Smith",
+                acceptanceCriteria: [
+                    "Multiple camera feeds displayed in responsive grid",
+                    "Click to enlarge individual camera view",
+                    "Zoom and pan controls for detailed viewing",
+                    "Camera status indicators (online/offline)",
+                    "Automatic failover for disconnected cameras"
+                ],
+                tags: ["frontend", "streaming", "ui"]
+            },
+            {
+                id: "SESS-003",
+                title: "As a teacher, I want to receive immediate alerts for suspicious behavior",
+                description: "Real-time notification system for AI-detected cheating attempts with severity levels",
+                epic: "ai-engine",
+                priority: "critical",
+                status: "progress",
+                points: 13,
+                assignee: "Mike Johnson",
+                acceptanceCriteria: [
+                    "AI system detects and classifies suspicious behaviors",
+                    "Alerts are sent within 3 seconds of detection",
+                    "Severity levels: Low, Medium, High, Critical",
+                    "Alert includes timestamp, camera location, behavior type",
+                    "Teacher can acknowledge or dismiss alerts",
+                    "False positive feedback mechanism"
+                ],
+                tags: ["ai", "alerts", "real-time"]
+            },
+            {
+                id: "SESS-004",
+                title: "As a teacher, I want to generate exam reports with incident summaries",
+                description: "Comprehensive reporting system with charts, statistics, and incident details",
+                epic: "reporting",
+                priority: "medium",
+                status: "todo",
+                points: 8,
+                assignee: "Sarah Wilson",
+                acceptanceCriteria: [
+                    "Generate reports for specific exam sessions",
+                    "Include detected incidents with timestamps",
+                    "Statistical overview with charts and graphs",
+                    "Export reports to PDF and Excel formats",
+                    "Filter reports by date range, severity, behavior type",
+                    "Include camera coverage statistics"
+                ],
+                tags: ["reporting", "pdf", "analytics"]
+            },
+            {
+                id: "SESS-005",
+                title: "As a system admin, I want to integrate with existing camera systems",
+                description: "Support multiple camera protocols and brands for seamless integration",
+                epic: "integration",
+                priority: "high",
+                status: "review",
+                points: 21,
+                assignee: "David Brown",
+                acceptanceCriteria: [
+                    "Support RTSP, HTTP, and proprietary camera protocols",
+                    "Auto-discovery of compatible cameras on network",
+                    "Camera configuration and calibration interface",
+                    "Support for at least 20 concurrent camera streams",
+                    "Bandwidth optimization and adaptive streaming",
+                    "Camera health monitoring and diagnostics"
+                ],
+                tags: ["integration", "cameras", "protocols", "networking"]
+            },
+            {
+                id: "SESS-006",
+                title: "As a teacher, I want to create and configure exam sessions",
+                description: "User-friendly interface for setting up new exam monitoring sessions",
+                epic: "dashboard",
+                priority: "high",
+                status: "done",
+                points: 5,
+                assignee: "Emily Davis",
+                acceptanceCriteria: [
+                    "Create new exam session with basic details",
+                    "Select cameras to monitor for the session",
+                    "Configure monitoring duration and schedule",
+                    "Set detection sensitivity for the exam",
+                    "Assign monitoring staff and permissions",
+                    "Save session templates for reuse"
+                ],
+                tags: ["frontend", "configuration", "scheduling"]
+            },
+            // Add more stories...
+        ];
+
+        let currentView = 'backlog';
+        let currentEpic = 'all';
+        let filteredStories = [...stories];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            renderStories();
+            populateKanbanBoard();
+            initializeDragAndDrop();
+        });
+
+        function switchView(view) {
+            // Hide all views
+            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected view
+            document.getElementById(view + 'View').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Update title
+            const titles = {
+                'backlog': '📋 Product Backlog',
+                'kanban': '📊 Kanban Board', 
+                'sprint': '🏃 Sprint Planning',
+                'burndown': '📈 Burndown Chart',
+                'story-map': '🗺️ Story Mapping',
+                'velocity': '⚡ Velocity Tracking'
+            };
+            
+            document.getElementById('viewTitle').textContent = titles[view];
+            currentView = view;
+            
+            // Add view-specific animations
+            document.querySelector('.view-content.active').classList.add('fade-in');
+        }
+
+        function renderStories() {
+            const container = document.getElementById('storiesContainer');
+            const storiesToShow = currentEpic === 'all' ? filteredStories : 
+                                  filteredStories.filter(s => s.epic === currentEpic);
+            
+            container.innerHTML = storiesToShow.map(story => `
+                <div class="story-item" onclick="showStoryDetails('${story.id}')">
+                    <div class="story-status status-${story.status}">${getStatusLabel(story.status)}</div>
+                    <div class="story-header">
+                        <div class="story-id">${story.id}</div>
+                    </div>
+                    <div class="story-title">${story.title}</div>
+                    <div class="story-description">${story.description}</div>
+                    <div class="story-meta">
+                        <div>
+                            <span class="story-priority priority-${story.priority}">${story.priority.toUpperCase()}</span>
+                            <span class="story-points">${story.points} pts</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666;">
+                            👤 ${story.assignee}
+                        </div>
+                    </div>
+                    <div class="tags">
+                        ${story.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateKanbanBoard() {
+            const columns = {
+                'todo': document.getElementById('todoColumn'),
+                'progress': document.getElementById('progressColumn'),
+                'review': document.getElementById('reviewColumn'),
+                'done': document.getElementById('doneColumn')
+            };
+            
+            // Clear columns
+            Object.values(columns).forEach(col => col.innerHTML = '');
+            
+            // Populate with stories
+            filteredStories.forEach(story => {
+                const storyElement = document.createElement('div');
+                storyElement.className = 'kanban-story';
+                storyElement.draggable = true;
+                storyElement.dataset.storyId = story.id;
+                storyElement.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div class="story-id">${story.id}</div>
+                        <div class="story-points">${story.points}</div>
+                    </div>
+                    <div class="story-title" style="font-size: 0.9rem; margin-bottom: 8px;">${story.title}</div>
+                    <div style="font-size: 0.8rem; color: #666;">👤 ${story.assignee}</div>
+                    <div class="tags" style="margin-top: 8px;">
+                        ${story.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+                
+                if (columns[story.status]) {
+                    columns[story.status].appendChild(storyElement);
+                }
+            });
+            
+            // Update story counts
+            document.querySelectorAll('.story-count').forEach((count, index) => {
+                const statuses = ['todo', 'progress', 'review', 'done'];
+                const storyCount = filteredStories.filter(s => s.status === statuses[index]).length;
+                count.textContent = storyCount;
+            });
+        }
+
+        function initializeDragAndDrop() {
+            const kanbanStories = document.querySelectorAll('.kanban-story');
+            const columns = document.querySelectorAll('.kanban-stories');
+            
+            kanbanStories.forEach(story => {
+                story.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.dataset.storyId);
+                    this.classList.add('dragging');
+                });
+                
+                story.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+            });
+            
+            columns.forEach(column => {
+                column.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '#e8f4f8';
+                });
+                
+                column.addEventListener('dragleave', function() {
+                    this.style.backgroundColor = '';
+                });
+                
+                column.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '';
+                    
+                    const storyId = e.dataTransfer.getData('text/plain');
+                    const newStatus = this.id.replace('Column', '');
+                    
+                    updateStoryStatus(storyId, newStatus);
+                });
+            });
+        }
+
+        function updateStoryStatus(storyId, newStatus) {
+            const story = stories.find(s => s.id === storyId);
+            if (story) {
+                story.status = newStatus;
+                populateKanbanBoard();
+                
+                // Show success notification
+                showNotification(`Story ${storyId} moved to ${getStatusLabel(newStatus)}`);
+            }
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'todo': 'To Do',
+                'progress': 'In Progress', 
+                'review': 'In Review',
+                'done': 'Done'
+            };
+            return labels[status] || status;
+        }
+
+        function filterStories() {
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredStories = stories.filter(story => {
+                const matchesPriority = !priorityFilter || story.priority === priorityFilter;
+                const matchesStatus = !statusFilter || story.status === statusFilter;
+                return matchesPriority && matchesStatus;
+            });
+            
+            renderStories();
+            populateKanbanBoard();
+        }
+
+        function showStoryDetails(storyId) {
+            const story = stories.find(s => s.id === storyId);
+            if (!story) return;
+            
+            document.getElementById('storyDetails').innerHTML = `
+                <h3>${story.id}: ${story.title}</h3>
+                <div style="margin: 15px 0;">
+                    <span class="story-priority priority-${story.priority}">${story.priority.toUpperCase()}</span>
+                    <span class="story-points" style="margin-left: 10px;">${story.points} Story Points</span>
+                    <span class="story-status status-${story.status}" style="margin-left: 10px;">${getStatusLabel(story.status)}</span>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>📝 Description</h4>
+                    <p style="background: #f8f9ff; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        ${story.description}
+                    </p>
+                </div>
+                
+                <div class="acceptance-criteria">
+                    <h4>✅ Acceptance Criteria</h4>
+                    ${story.acceptanceCriteria.map(criteria => `
+                        <div class="criteria-item">${criteria}</div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>👤 Assignment</h4>
+                    <p>Assigned to: <strong>${story.assignee}</strong></p>
+                    <p>Epic: <strong>${story.epic}</strong></p>
+                </div>
+                
+                <div class="tags">
+                    <h4 style="margin-bottom: 10px;">🏷️ Tags</h4>
+                    ${story.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                
+                <div style="margin-top: 30px; text-align: right;">
+                    <button class="nav-btn" onclick="editStory('${story.id}')">✏️ Edit</button>
+                    <button class="nav-btn" onclick="closeModal()">❌ Close</button>
+                </div>
+            `;
+            
+            document.getElementById('storyModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('storyModal').style.display = 'none';
+        }
+
+        function addNewStory() {
+            alert('Add New Story functionality would open a form to create new user stories.');
+        }
+
+        function editStory(storyId) {
+            alert(`Edit Story ${storyId} functionality would open an edit form.`);
+        }
+
+        function exportBacklog() {
+            const dataStr = JSON.stringify(filteredStories, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'sess-product-backlog.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('Backlog exported successfully!');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4caf50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 2000;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Epic selection
+        document.querySelectorAll('.epic-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.epic-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                currentEpic = this.dataset.epic;
+                renderStories();
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                addNewStory();
+            }
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportBacklog();
+            }
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Auto-save functionality (simulation)
+        setInterval(() => {
+            console.log('Auto-saving product backlog...');
+            localStorage.setItem('sess-backlog', JSON.stringify(stories));
+        }, 30000);
+
+        // Initialize with animations
+        setTimeout(() => {
+            document.querySelectorAll('.story-item').forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('fade-in');
+                }, index * 50);
+            });
+        }, 500);
+    </script>
+</body>
+</html>

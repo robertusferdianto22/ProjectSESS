@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SESS Acceptance Criteria & Quality Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .quality-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .dashboard-nav {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .content-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-content {
+            padding: 30px;
+            display: none;
+        }
+
+        .view-content.active {
+            display: block;
+        }
+
+        /* Criteria Overview */
+        .criteria-overview {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .story-list {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .story-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .story-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .story-item.selected {
+            border-color: #4caf50;
+            background: #e8f5e8;
+        }
+
+        .story-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .story-id {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .completion-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .completion-high { background: #e8f5e8; color: #2e7d32; }
+        .completion-medium { background: #fff3e0; color: #f57c00; }
+        .completion-low { background: #ffebee; color: #d32f2f; }
+
+        .story-title {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 8px;
+        }
+
+        .criteria-summary {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .criteria-detail {
+            background: #e8f4f8;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .criteria-detail h3 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .criteria-list {
+            list-style: none;
+        }
+
+        .criteria-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .criteria-item:hover {
+            border-color: #667eea;
+        }
+
+        .criteria-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .criteria-checkbox.checked {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: white;
+        }
+
+        .criteria-checkbox.failed {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+        }
+
+        .criteria-checkbox.pending {
+            background: #ff9800;
+            border-color: #ff9800;
+            color: white;
+        }
+
+        .criteria-text {
+            flex: 1;
+        }
+
+        .criteria-description {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .criteria-meta {
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .test-status {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .test-passed { background: #e8f5e8; color: #2e7d32; }
+        .test-failed { background: #ffebee; color: #d32f2f; }
+        .test-pending { background: #fff3e0; color: #f57c00; }
+        .test-not-started { background: #f5f5f5; color: #666; }
+
+        /* Testing Workflow */
+        .testing-workflow {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        .workflow-main {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .workflow-stage {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stage-title {
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .stage-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active { background: #e3f2fd; color: #1976d2; }
+        .status-completed { background: #e8f5e8; color: #388e3c; }
+        .status-pending { background: #fff3e0; color: #f57c00; }
+
+        .stage-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .test-case {
+            background: #f8f9ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .test-case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .test-case-id {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .workflow-sidebar {
+            background: #e8f4f8;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        /* Quality Gates */
+        .quality-gates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .gate-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f4f8 100%);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .gate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .gate-card.passed {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+        }
+
+        .gate-card.failed {
+            border-color: #f44336;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+
+        .gate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .gate-title {
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .gate-status {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .gate-passed { background: #4caf50; color: white; }
+        .gate-failed { background: #f44336; color: white; }
+        .gate-pending { background: #ff9800; color: white; }
+
+        .gate-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .gate-metric {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .metric-name {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Definition of Done */
+        .dod-checklist {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .dod-category {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .dod-category h4 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dod-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dod-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Progress Visualization */
+        .progress-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .chart-container {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+        }
+
+        .progress-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #4caf50 0deg 252deg,
+                #e0e0e0 252deg 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-inner {
+            width: 150px;
+            height: 150px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-percentage {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        .bar {
+            width: 40px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .bar:hover {
+            background: linear-gradient(to top, #4caf50, #45a049);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Templates */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .template-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f4f8 100%);
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .template-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .template-title {
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .template-tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+
+        .template-description {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .template-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .criteria-overview,
+            .testing-workflow,
+            .progress-charts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .quality-gates {
+                grid-template-columns: 1fr;
+            }
+            
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>✅ ACCEPTANCE CRITERIA & QUALITY DASHBOARD</h1>
+            <p>Smart Exam Surveillance System (SESS) - Quality Assurance & Testing Management</p>
+            
+            <div class="quality-metrics">
+                <div class="metric-card">
+                    <div class="metric-number">87%</div>
+                    <div class="metric-label">Criteria Completion</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">324</div>
+                    <div class="metric-label">Total Criteria</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">92%</div>
+                    <div class="metric-label">Test Pass Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">156</div>
+                    <div class="metric-label">Test Cases</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">8</div>
+                    <div class="metric-label">Quality Gates</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">95%</div>
+                    <div class="metric-label">DoD Compliance</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="dashboard-nav">
+            <button class="nav-btn active" onclick="switchView('overview')">📋 Criteria Overview</button>
+            <button class="nav-btn" onclick="switchView('testing')">🧪 Testing Workflow</button>
+            <button class="nav-btn" onclick="switchView('quality')">🚪 Quality Gates</button>
+            <button class="nav-btn" onclick="switchView('dod')">✅ Definition of Done</button>
+            <button class="nav-btn" onclick="switchView('progress')">📊 Progress Analytics</button>
+            <button class="nav-btn" onclick="switchView('templates')">📝 Templates</button>
+            
+            <div style="margin-left: auto; display: flex; gap: 10px;">
+                <button class="nav-btn" onclick="exportCriteria()">📤 Export</button>
+                <button class="nav-btn" onclick="generateReport()">📋 Report</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h2 id="viewTitle">📋 Acceptance Criteria Overview</h2>
+                <div>
+                    <button class="nav-btn" onclick="addCriteria()">➕ Add Criteria</button>
+                    <button class="nav-btn" onclick="runTests()">🧪 Run Tests</button>
+                </div>
+            </div>
+
+            <!-- Criteria Overview -->
+            <div id="overviewView" class="view-content active">
+                <div class="criteria-overview">
+                    <div class="story-list">
+                        <h3 style="margin-bottom: 20px; color: #1e3c72;">📚 User Stories</h3>
+                        
+                        <div class="story-item selected" onclick="selectStory('SESS-001')">
+                            <div class="story-header">
+                                <div class="story-id">SESS-001</div>
+                                <div class="completion-badge completion-high">87% Complete</div>
+                            </div>
+                            <div class="story-title">AI Detection Parameter Configuration</div>
+                            <div class="criteria-summary">
+                                <span>✅ 7/8 criteria</span>
+                                <span>🧪 12/14 tests</span>
+                                <span>⚠️ 1 pending</span>
+                            </div>
+                        </div>
+                        
+                        <div class="story-item" onclick="selectStory('SESS-002')">
+                            <div class="story-header">
+                                <div class="story-id">SESS-002</div>
+                                <div class="completion-badge completion-medium">65% Complete</div>
+                            </div>
+                            <div class="story-title">Real-time Camera Feed Display</div>
+                            <div class="criteria-summary">
+                                <span>✅ 4/6 criteria</span>
+                                <span>🧪 8/12 tests</span>
+                                <span>❌ 2 failed</span>
+                            </div>
+                        </div>
+                        
+                        <div class="story-item" onclick="selectStory('SESS-003')">
+                            <div class="story-header">
+                                <div class="story-id">SESS-003</div>
+                                <div class="completion-badge completion-high">92% Complete</div>
+                            </div>
+                            <div class="story-title">Suspicious Behavior Alert System</div>
+                            <div class="criteria-summary">
+                                <span>✅ 11/12 criteria</span>
+                                <span>🧪 18/20 tests</span>
+                                <span>⏳ 1 testing</span>
+                            </div>
+                        </div>
+                        
+                        <div class="story-item" onclick="selectStory('SESS-004')">
+                            <div class="story-header">
+                                <div class="story-id">SESS-004</div>
+                                <div class="completion-badge completion-low">35% Complete</div>
+                            </div>
+                            <div class="story-title">Exam Report Generation</div>
+                            <div class="criteria-summary">
+                                <span>✅ 3/8 criteria</span>
+                                <span>🧪 4/16 tests</span>
+                                <span>📝 5 not started</span>
+                            </div>
+                        </div>
+                        
+                        <div class="story-item" onclick="selectStory('SESS-005')">
+                            <div class="story-header">
+                                <div class="story-id">SESS-005</div>
+                                <div class="completion-badge completion-medium">78% Complete</div>
+                            </div>
+                            <div class="story-title">Camera System Integration</div>
+                            <div class="criteria-summary">
+                                <span>✅ 9/12 criteria</span>
+                                <span>🧪 22/28 tests</span>
+                                <span>🔄 3 in progress</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="criteria-detail">
+                        <h3>
+                            🎯 SESS-001: AI Detection Parameter Configuration
+                            <div style="font-size: 1rem; color: #4caf50;">87% Complete</div>
+                        </h3>
+                        
+                        <ul class="criteria-list">
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox checked">✓</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Admin dapat mengakses panel konfigurasi AI melalui menu sistem</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-passed">PASSED</span>
+                                        <span>👤 Test by: QA Team</span>
+                                        <span>📅 29 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox checked">✓</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Sensitivity level dapat diatur dalam skala 1-10 dengan slider atau input numerik</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-passed">PASSED</span>
+                                        <span>👤 Test by: Dev Team</span>
+                                        <span>📅 28 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox checked">✓</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Alert threshold dapat dikonfigurasi untuk setiap jenis perilaku (looking around, device usage, etc.)</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-passed">PASSED</span>
+                                        <span>👤 Test by: Business Analyst</span>
+                                        <span>📅 27 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox checked">✓</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Perubahan konfigurasi disimpan dan diterapkan ke sistem deteksi secara real-time</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-passed">PASSED</span>
+                                        <span>👤 Test by: QA Team</span>
+                                        <span>📅 26 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox checked">✓</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Sistem mencatat audit trail untuk semua perubahan konfigurasi dengan timestamp dan user</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-passed">PASSED</span>
+                                        <span>👤 Test by: Security Team</span>
+                                        <span>📅 25 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox checked">✓</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Konfigurasi dapat di-export dan import untuk backup dan deployment</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-passed">PASSED</span>
+                                        <span>👤 Test by: DevOps Team</span>
+                                        <span>📅 24 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox checked">✓</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Validasi input untuk memastikan nilai konfigurasi dalam range yang valid</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-passed">PASSED</span>
+                                        <span>👤 Test by: QA Team</span>
+                                        <span>📅 23 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="criteria-item">
+                                <div class="criteria-checkbox pending">⏳</div>
+                                <div class="criteria-text">
+                                    <div class="criteria-description">Reset ke konfigurasi default dengan konfirmasi admin</div>
+                                    <div class="criteria-meta">
+                                        <span class="test-status test-pending">PENDING</span>
+                                        <span>👤 Assigned to: QA Team</span>
+                                        <span>📅 Target: 30 Jul 2025</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #4caf50;">
+                            <strong>✅ Overall Status:</strong> Ready for UAT - Waiting for final reset functionality test
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testing Workflow -->
+            <div id="testingView" class="view-content">
+                <div class="testing-workflow">
+                    <div class="workflow-main">
+                        <h3 style="margin-bottom: 20px; color: #1e3c72;">🧪 Testing Pipeline</h3>
+                        
+                        <div class="workflow-stage">
+                            <div class="stage-header">
+                                <div class="stage-title">1. Unit Testing</div>
+                                <div class="stage-status status-completed">COMPLETED</div>
+                            </div>
+                            <div class="stage-content">
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">UT-001</div>
+                                        <div class="test-status test-passed">PASSED</div>
+                                    </div>
+                                    <div>AI Model Input Validation</div>
+                                </div>
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">UT-002</div>
+                                        <div class="test-status test-passed">PASSED</div>
+                                    </div>
+                                    <div>Configuration Parameter Bounds</div>
+                                </div>
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">UT-003</div>
+                                        <div class="test-status test-passed">PASSED</div>
+                                    </div>
+                                    <div>Database Connection Handling</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="workflow-stage">
+                            <div class="stage-header">
+                                <div class="stage-title">2. Integration Testing</div>
+                                <div class="stage-status status-active">IN PROGRESS</div>
+                            </div>
+                            <div class="stage-content">
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">IT-001</div>
+                                        <div class="test-status test-passed">PASSED</div>
+                                    </div>
+                                    <div>AI Engine + Dashboard Integration</div>
+                                </div>
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">IT-002</div>
+                                        <div class="test-status test-pending">PENDING</div>
+                                    </div>
+                                    <div>Camera Feed + Detection Pipeline</div>
+                                </div>
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">IT-003</div>
+                                        <div class="test-status test-failed">FAILED</div>
+                                    </div>
+                                    <div>Alert System + Notification Service</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="workflow-stage">
+                            <div class="stage-header">
+                                <div class="stage-title">3. System Testing</div>
+                                <div class="stage-status status-pending">PENDING</div>
+                            </div>
+                            <div class="stage-content">
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">ST-001</div>
+                                        <div class="test-status test-not-started">NOT STARTED</div>
+                                    </div>
+                                    <div>End-to-End Exam Monitoring</div>
+                                </div>
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">ST-002</div>
+                                        <div class="test-status test-not-started">NOT STARTED</div>
+                                    </div>
+                                    <div>Performance Under Load</div>
+                                </div>
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">ST-003</div>
+                                        <div class="test-status test-not-started">NOT STARTED</div>
+                                    </div>
+                                    <div>Security & Access Control</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="workflow-stage">
+                            <div class="stage-header">
+                                <div class="stage-title">4. User Acceptance Testing</div>
+                                <div class="stage-status status-pending">PENDING</div>
+                            </div>
+                            <div class="stage-content">
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">UAT-001</div>
+                                        <div class="test-status test-not-started">NOT STARTED</div>
+                                    </div>
+                                    <div>Teacher Workflow Validation</div>
+                                </div>
+                                <div class="test-case">
+                                    <div class="test-case-header">
+                                        <div class="test-case-id">UAT-002</div>
+                                        <div class="test-status test-not-started">NOT STARTED</div>
+                                    </div>
+                                    <div>Admin Configuration Tasks</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-sidebar">
+                        <h4 style="color: #1e3c72; margin-bottom: 15px;">📊 Testing Progress</h4>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #4caf50; text-align: center;">74%</div>
+                            <div style="text-align: center; color: #666;">Overall Completion</div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h5 style="margin-bottom: 10px;">📈 Test Results</h5>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem;">
+                                <div>✅ Passed: 28</div>
+                                <div>❌ Failed: 3</div>
+                                <div>⏳ Pending: 8</div>
+                                <div>📝 Not Started: 12</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">
+                            <h6 style="color: #e65100; margin-bottom: 8px;">⚠️ Blockers</h6>
+                            <div style="font-size: 0.8rem; color: #666;">
+                                <div>• IT-003: Alert service timeout issue</div>
+                                <div>• Camera driver compatibility</div>
+                                <div>• UAT environment setup pending</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <h5 style="margin-bottom: 10px;">🎯 Next Actions</h5>
+                            <div style="font-size: 0.8rem; color: #666;">
+                                <div>• Fix alert service timeout</div>
+                                <div>• Complete camera integration</div>
+                                <div>• Schedule UAT sessions</div>
+                                <div>• Performance testing setup</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Gates -->
+            <div id="qualityView" class="view-content">
+                <h3 style="margin-bottom: 25px; color: #1e3c72; text-align: center;">🚪 Quality Gates & Checkpoints</h3>
+                
+                <div class="quality-gates">
+                    <div class="gate-card passed">
+                        <div class="gate-header">
+                            <div class="gate-title">🔧 Code Quality</div>
+                            <div class="gate-status gate-passed">PASSED</div>
+                        </div>
+                        <div>Automated code analysis, test coverage, and technical debt assessment</div>
+                        <div class="gate-metrics">
+                            <div class="gate-metric">
+                                <div class="metric-value">92%</div>
+                                <div class="metric-name">Coverage</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">A</div>
+                                <div class="metric-name">Grade</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">2</div>
+                                <div class="metric-name">Issues</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">8.7</div>
+                                <div class="metric-name">Score</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gate-card passed">
+                        <div class="gate-header">
+                            <div class="gate-title">🧪 Functional Testing</div>
+                            <div class="gate-status gate-passed">PASSED</div>
+                        </div>
+                        <div>Core functionality verification and acceptance criteria validation</div>
+                        <div class="gate-metrics">
+                            <div class="gate-metric">
+                                <div class="metric-value">87%</div>
+                                <div class="metric-name">AC Complete</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">94%</div>
+                                <div class="metric-name">Test Pass</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">0</div>
+                                <div class="metric-name">Blockers</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">156</div>
+                                <div class="metric-name">Tests</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gate-card failed">
+                        <div class="gate-header">
+                            <div class="gate-title">⚡ Performance</div>
+                            <div class="gate-status gate-failed">FAILED</div>
+                        </div>
+                        <div>System performance, load handling, and response time validation</div>
+                        <div class="gate-metrics">
+                            <div class="gate-metric">
+                                <div class="metric-value">3.8s</div>
+                                <div class="metric-name">Response</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">85%</div>
+                                <div class="metric-name">CPU Usage</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">15</div>
+                                <div class="metric-name">Concurrent</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">2.1GB</div>
+                                <div class="metric-name">Memory</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gate-card passed">
+                        <div class="gate-header">
+                            <div class="gate-title">🔒 Security</div>
+                            <div class="gate-status gate-passed">PASSED</div>
+                        </div>
+                        <div>Security vulnerabilities, authentication, and data protection checks</div>
+                        <div class="gate-metrics">
+                            <div class="gate-metric">
+                                <div class="metric-value">0</div>
+                                <div class="metric-name">Critical</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">2</div>
+                                <div class="metric-name">Medium</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">✓</div>
+                                <div class="metric-name">OWASP</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">✓</div>
+                                <div class="metric-name">Penetration</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gate-card">
+                        <div class="gate-header">
+                            <div class="gate-title">📱 Usability</div>
+                            <div class="gate-status gate-pending">PENDING</div>
+                        </div>
+                        <div>User experience validation, accessibility, and interface usability</div>
+                        <div class="gate-metrics">
+                            <div class="gate-metric">
+                                <div class="metric-value">4.2</div>
+                                <div class="metric-name">UX Score</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">AA</div>
+                                <div class="metric-name">WCAG</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">12</div>
+                                <div class="metric-name">Users</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">8</div>
+                                <div class="metric-name">Issues</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gate-card">
+                        <div class="gate-header">
+                            <div class="gate-title">🤖 AI Accuracy</div>
+                            <div class="gate-status gate-pending">PENDING</div>
+                        </div>
+                        <div>Machine learning model performance and detection accuracy validation</div>
+                        <div class="gate-metrics">
+                            <div class="gate-metric">
+                                <div class="metric-value">89%</div>
+                                <div class="metric-name">Accuracy</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">12%</div>
+                                <div class="metric-name">False Pos</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">7%</div>
+                                <div class="metric-name">False Neg</div>
+                            </div>
+                            <div class="gate-metric">
+                                <div class="metric-value">0.94</div>
+                                <div class="metric-name">F1 Score</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Definition of Done -->
+            <div id="dodView" class="view-content">
+                <div class="dod-checklist">
+                    <h3 style="margin-bottom: 25px; color: #1e3c72; text-align: center;">✅ Definition of Done Checklist</h3>
+                    
+                    <div class="dod-category">
+                        <h4>🔧 Development Standards</h4>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Code follows established coding standards and conventions</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>All functions and classes have appropriate documentation</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Code has been peer reviewed and approved</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox pending">⏳</div>
+                            <div>Performance profiling completed for critical paths</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dod-category">
+                        <h4>🧪 Testing Requirements</h4>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Unit tests written with >90% code coverage</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Integration tests cover all API endpoints</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox pending">⏳</div>
+                            <div>End-to-end tests validate complete user workflows</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>All acceptance criteria have corresponding test cases</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox failed">❌</div>
+                            <div>Performance tests meet SLA requirements</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dod-category">
+                        <h4>🔒 Security & Compliance</h4>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Security scan completed with no critical vulnerabilities</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Data privacy requirements implemented (GDPR compliance)</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Authentication and authorization working correctly</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox pending">⏳</div>
+                            <div>Security audit completed by external team</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dod-category">
+                        <h4>📚 Documentation</h4>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>User documentation updated with new features</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>API documentation generated and published</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox pending">⏳</div>
+                            <div>Deployment guide updated with configuration changes</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Release notes prepared for stakeholders</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dod-category">
+                        <h4>🚀 Deployment Readiness</h4>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Feature can be deployed via CI/CD pipeline</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Database migrations tested and validated</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox pending">⏳</div>
+                            <div>Rollback procedure documented and tested</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Monitoring and alerting configured</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dod-category">
+                        <h4>✅ Stakeholder Approval</h4>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Product Owner has reviewed and approved feature</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox pending">⏳</div>
+                            <div>Business stakeholders have signed off on UAT</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox checked">✓</div>
+                            <div>Technical lead has approved architecture and implementation</div>
+                        </div>
+                        <div class="dod-item">
+                            <div class="criteria-checkbox pending">⏳</div>
+                            <div>Compliance team has approved privacy and security measures</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <div style="background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); padding: 20px; border-radius: 15px; border: 2px solid #4caf50;">
+                            <h4 style="color: #2e7d32; margin-bottom: 10px;">📊 Overall DoD Compliance</h4>
+                            <div style="font-size: 2.5rem; font-weight: bold; color: #2e7d32;">82%</div>
+                            <div style="color: #666;">18 of 22 criteria met</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Analytics -->
+            <div id="progressView" class="view-content">
+                <div class="progress-charts">
+                    <div class="chart-container">
+                        <h3 style="margin-bottom: 20px; color: #1e3c72;">📊 Criteria Completion Rate</h3>
+                        <div class="circular-progress">
+                            <div class="progress-circle">
+                                <div class="progress-inner">
+                                    <div class="progress-percentage">87%</div>
+                                    <div class="progress-label">Complete</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; color: #666;">
+                            <div>324 total criteria</div>
+                            <div>282 completed • 42 remaining</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3 style="margin-bottom: 20px; color: #1e3c72;">📈 Sprint Progress Trend</h3>
+                        <div class="bar-chart">
+                            <div class="bar" style="height: 60%;">
+                                <div class="bar-label">S1</div>
+                                <div class="bar-value">58%</div>
+                            </div>
+                            <div class="bar" style="height: 75%;">
+                                <div class="bar-label">S2</div>
+                                <div class="bar-value">73%</div>
+                            </div>
+                            <div class="bar" style="height: 90%;">
+                                <div class="bar-label">S3</div>
+                                <div class="bar-value">87%</div>
+                            </div>
+                            <div class="bar" style="height: 50%; background: linear-gradient(to top, #ddd, #bbb);">
+                                <div class="bar-label">S4</div>
+                                <div class="bar-value">?</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; color: #666;">
+                            <div>Criteria completion by sprint</div>
+                            <div>Target: >85% per sprint</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px;">
+                    <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #2e7d32;">92%</div>
+                        <div style="color: #666;">Test Pass Rate</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 5px;">144 passed / 156 total</div>
+                    </div>
+                    
+                    <div style="background: #fff3e0; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #f57c00;">8%</div>
+                        <div style="color: #666;">Defect Rate</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 5px;">12 issues / 156 tests</div>
+                    </div>
+                    
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #1976d2;">2.3</div>
+                        <div style="color: #666;">Avg Review Cycles</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 5px;">Per acceptance criteria</div>
+                    </div>
+                    
+                    <div style="background: #f3e5f5; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #7b1fa2;">4.2</div>
+                        <div style="color: #666;">Quality Score</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 5px;">Out of 5.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates -->
+            <div id="templatesView" class="view-content">
+                <h3 style="margin-bottom: 25px; color: #1e3c72; text-align: center;">📝 Acceptance Criteria Templates</h3>
+                
+                <div class="template-grid">
+                    <div class="template-card" onclick="applyTemplate('user-interface')">
+                        <div class="template-header">
+                            <div class="template-title">🖥️ User Interface Component</div>
+                            <div class="template-tag">UI/UX</div>
+                        </div>
+                        <div class="template-description">
+                            Standard criteria for UI components including accessibility, responsiveness, and user interactions
+                        </div>
+                        <div class="template-stats">
+                            <span>8 criteria</span>
+                            <span>•</span>
+                            <span>Used 24 times</span>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" onclick="applyTemplate('api-endpoint')">
+                        <div class="template-header">
+                            <div class="template-title">🔌 API Endpoint</div>
+                            <div class="template-tag">Backend</div>
+                        </div>
+                        <div class="template-description">
+                            Template for REST API endpoints covering authentication, validation, error handling, and documentation
+                        </div>
+                        <div class="template-stats">
+                            <span>12 criteria</span>
+                            <span>•</span>
+                            <span>Used 18 times</span>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" onclick="applyTemplate('data-processing')">
+                        <div class="template-header">
+                            <div class="template-title">📊 Data Processing</div>
+                            <div class="template-tag">Backend</div>
+                        </div>
+                        <div class="template-description">
+                            Criteria for data processing features including validation, transformation, and error handling
+                        </div>
+                        <div class="template-stats">
+                            <span>10 criteria</span>
+                            <span>•</span>
+                            <span>Used 15 times</span>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" onclick="applyTemplate('security-feature')">
+                        <div class="template-header">
+                            <div class="template-title">🔒 Security Feature</div>
+                            <div class="template-tag">Security</div>
+                        </div>
+                        <div class="template-description">
+                            Security-focused criteria including authentication, authorization, encryption, and audit trails
+                        </div>
+                        <div class="template-stats">
+                            <span>15 criteria</span>
+                            <span>•</span>
+                            <span>Used 9 times</span>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" onclick="applyTemplate('ai-ml-feature')">
+                        <div class="template-header">
+                            <div class="template-title">🤖 AI/ML Feature</div>
+                            <div class="template-tag">AI</div>
+                        </div>
+                        <div class="template-description">
+                            Specialized criteria for AI/ML features covering accuracy, bias, explainability, and performance
+                        </div>
+                        <div class="template-stats">
+                            <span>18 criteria</span>
+                            <span>•</span>
+                            <span>Used 6 times</span>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" onclick="applyTemplate('reporting-feature')">
+                        <div class="template-header">
+                            <div class="template-title">📈 Reporting Feature</div>
+                            <div class="template-tag">Analytics</div>
+                        </div>
+                        <div class="template-description">
+                            Template for reporting and analytics features including data accuracy, export options, and visualizations
+                        </div>
+                        <div class="template-stats">
+                            <span>11 criteria</span>
+                            <span>•</span>
+                            <span>Used 12 times</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="nav-btn" onclick="createCustomTemplate()">➕ Create Custom Template</button>
+                    <button class="nav-btn" onclick="importTemplate()">📥 Import Template</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Criteria Detail Modal -->
+    <div id="criteriaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="criteriaDetails">
+                <!-- Criteria details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentView = 'overview';
+        let selectedStory = 'SESS-001';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAnimations();
+            loadStoriesData();
+        });
+
+        function switchView(view) {
+            // Hide all views
+            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected view
+            document.getElementById(view + 'View').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Update title
+            const titles = {
+                'overview': '📋 Acceptance Criteria Overview',
+                'testing': '🧪 Testing Workflow',
+                'quality': '🚪 Quality Gates',
+                'dod': '✅ Definition of Done',
+                'progress': '📊 Progress Analytics',
+                'templates': '📝 Templates'
+            };
+            
+            document.getElementById('viewTitle').textContent = titles[view];
+            currentView = view;
+            
+            // Add view-specific animations
+            document.querySelector('.view-content.active').classList.add('fade-in');
+        }
+
+        function selectStory(storyId) {
+            // Update UI selection
+            document.querySelectorAll('.story-item').forEach(item => item.classList.remove('selected'));
+            event.target.closest('.story-item').classList.add('selected');
+            
+            selectedStory = storyId;
+            updateCriteriaDetail(storyId);
+        }
+
+        function updateCriteriaDetail(storyId) {
+            // Sample data for different stories
+            const storyData = {
+                'SESS-001': {
+                    title: 'AI Detection Parameter Configuration',
+                    completion: '87%',
+                    criteria: [
+                        { text: 'Admin dapat mengakses panel konfigurasi AI melalui menu sistem', status: 'checked', test: 'passed', tester: 'QA Team', date: '29 Jul 2025' },
+                        { text: 'Sensitivity level dapat diatur dalam skala 1-10 dengan slider atau input numerik', status: 'checked', test: 'passed', tester: 'Dev Team', date: '28 Jul 2025' },
+                        { text: 'Alert threshold dapat dikonfigurasi untuk setiap jenis perilaku', status: 'checked', test: 'passed', tester: 'Business Analyst', date: '27 Jul 2025' },
+                        { text: 'Perubahan konfigurasi disimpan dan diterapkan ke sistem deteksi secara real-time', status: 'checked', test: 'passed', tester: 'QA Team', date: '26 Jul 2025' },
+                        { text: 'Sistem mencatat audit trail untuk semua perubahan konfigurasi', status: 'checked', test: 'passed', tester: 'Security Team', date: '25 Jul 2025' },
+                        { text: 'Konfigurasi dapat di-export dan import untuk backup dan deployment', status: 'checked', test: 'passed', tester: 'DevOps Team', date: '24 Jul 2025' },
+                        { text: 'Validasi input untuk memastikan nilai konfigurasi dalam range yang valid', status: 'checked', test: 'passed', tester: 'QA Team', date: '23 Jul 2025' },
+                        { text: 'Reset ke konfigurasi default dengan konfirmasi admin', status: 'pending', test: 'pending', tester: 'QA Team', date: 'Target: 30 Jul 2025' }
+                    ]
+                },
+                'SESS-002': {
+                    title: 'Real-time Camera Feed Display',
+                    completion: '65%',
+                    criteria: [
+                        { text: 'Multiple camera feeds displayed in responsive grid layout', status: 'checked', test: 'passed', tester: 'Frontend Team', date: '28 Jul 2025' },
+                        { text: 'Click to enlarge individual camera view with overlay controls', status: 'checked', test: 'passed', tester: 'UX Team', date: '27 Jul 2025' },
+                        { text: 'Zoom and pan controls for detailed viewing of specific areas', status: 'failed', test: 'failed', tester: 'QA Team', date: '26 Jul 2025' },
+                        { text: 'Camera status indicators show online/offline/error states', status: 'checked', test: 'passed', tester: 'Backend Team', date: '25 Jul 2025' },
+                        { text: 'Automatic failover for disconnected cameras with notification', status: 'pending', test: 'pending', tester: 'DevOps Team', date: 'Target: 31 Jul 2025' },
+                        { text: 'Performance optimization for 20+ concurrent camera streams', status: 'failed', test: 'failed', tester: 'Performance Team', date: '24 Jul 2025' }
+                    ]
+                }
+            };
+
+            const data = storyData[storyId] || storyData['SESS-001'];
+            
+            // Update criteria detail panel
+            const criteriaHtml = data.criteria.map(criteria => `
+                <li class="criteria-item">
+                    <div class="criteria-checkbox ${criteria.status}">${getStatusIcon(criteria.status)}</div>
+                    <div class="criteria-text">
+                        <div class="criteria-description">${criteria.text}</div>
+                        <div class="criteria-meta">
+                            <span class="test-status test-${criteria.test}">${criteria.test.toUpperCase()}</span>
+                            <span>👤 ${criteria.tester}</span>
+                            <span>📅 ${criteria.date}</span>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+
+            document.querySelector('.criteria-detail h3').innerHTML = `
+                🎯 ${storyId}: ${data.title}
+                <div style="font-size: 1rem; color: #4caf50;">${data.completion} Complete</div>
+            `;
+            
+            document.querySelector('.criteria-list').innerHTML = criteriaHtml;
+        }
+
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'checked': return '✓';
+                case 'failed': return '❌';
+                case 'pending': return '⏳';
+                default: return '○';
+            }
+        }
+
+        function toggleCriteria(element) {
+            const checkbox = element.querySelector('.criteria-checkbox');
+            const currentStatus = checkbox.classList.contains('checked') ? 'pending' : 
+                               checkbox.classList.contains('pending') ? 'failed' : 'checked';
+            
+            // Update visual state
+            checkbox.className = `criteria-checkbox ${currentStatus}`;
+            checkbox.textContent = getStatusIcon(currentStatus);
+            
+            // Update test status
+            const testStatus = element.querySelector('.test-status');
+            testStatus.className = `test-status test-${currentStatus}`;
+            testStatus.textContent = currentStatus.toUpperCase();
+            
+            showNotification(`Criteria status updated to ${currentStatus}`);
+        }
+
+        function addCriteria() {
+            alert('Add New Acceptance Criteria functionality would open a form to create new criteria.');
+        }
+
+        function runTests() {
+            showNotification('Running automated tests for selected criteria...');
+            
+            // Simulate test execution
+            setTimeout(() => {
+                showNotification('Test execution completed. Results updated.');
+                updateTestResults();
+            }, 3000);
+        }
+
+        function updateTestResults() {
+            // Simulate updating test results
+            const testElements = document.querySelectorAll('.test-status.test-pending');
+            testElements.forEach((element, index) => {
+                setTimeout(() => {
+                    const passed = Math.random() > 0.3; // 70% pass rate
+                    element.className = `test-status test-${passed ? 'passed' : 'failed'}`;
+                    element.textContent = passed ? 'PASSED' : 'FAILED';
+                    
+                    const checkbox = element.closest('.criteria-item').querySelector('.criteria-checkbox');
+                    checkbox.className = `criteria-checkbox ${passed ? 'checked' : 'failed'}`;
+                    checkbox.textContent = getStatusIcon(passed ? 'checked' : 'failed');
+                }, index * 500);
+            });
+        }
+
+        function exportCriteria() {
+            const exportData = {
+                project: "SESS - Smart Exam Surveillance System",
+                exportDate: new Date().toISOString(),
+                stories: [
+                    {
+                        id: "SESS-001",
+                        title: "AI Detection Parameter Configuration",
+                        completion: 87,
+                        criteria: 8,
+                        testsPassed: 7,
+                        status: "ready-for-uat"
+                    }
+                    // Add more stories...
+                ]
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', 'sess-acceptance-criteria.json');
+            linkElement.click();
+            
+            showNotification('Acceptance criteria exported successfully!');
+        }
+
+        function generateReport() {
+            const reportWindow = window.open('', '_blank');
+            reportWindow.document.write(`
+                <html>
+                <head>
+                    <title>SESS Acceptance Criteria Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { background: #1e3c72; color: white; padding: 20px; text-align: center; }
+                        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+                        .metric { display: inline-block; margin: 10px; padding: 10px; background: #f5f5f5; }
+                        .criteria { margin: 10px 0; padding: 10px; background: #f8f9ff; }
+                        .status-passed { color: #4caf50; font-weight: bold; }
+                        .status-failed { color: #f44336; font-weight: bold; }
+                        .status-pending { color: #ff9800; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>SESS Acceptance Criteria Report</h1>
+                        <p>Generated on ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    <div class="section">
+                        <h2>Overall Metrics</h2>
+                        <div class="metric">Total Stories: 5</div>
+                        <div class="metric">Total Criteria: 324</div>
+                        <div class="metric">Completed: 87%</div>
+                        <div class="metric">Test Pass Rate: 92%</div>
+                    </div>
+                    <div class="section">
+                        <h2>Quality Gates Status</h2>
+                        <div class="criteria">Code Quality: <span class="status-passed">PASSED</span></div>
+                        <div class="criteria">Functional Testing: <span class="status-passed">PASSED</span></div>
+                        <div class="criteria">Performance: <span class="status-failed">FAILED</span></div>
+                        <div class="criteria">Security: <span class="status-passed">PASSED</span></div>
+                        <div class="criteria">Usability: <span class="status-pending">PENDING</span></div>
+                        <div class="criteria">AI Accuracy: <span class="status-pending">PENDING</span></div>
+                    </div>
+                    <div class="section">
+                        <h2>Recommendations</h2>
+                        <ul>
+                            <li>Address performance issues in camera feed handling</li>
+                            <li>Complete AI accuracy validation</li>
+                            <li>Finalize usability testing with teachers</li>
+                            <li>Resolve remaining failed test cases</li>
+                        </ul>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        function applyTemplate(templateType) {
+            alert(`Applying ${templateType} template to current story. This would populate acceptance criteria based on the selected template.`);
+        }
+
+        function createCustomTemplate() {
+            alert('Create Custom Template functionality would open a template builder interface.');
+        }
+
+        function importTemplate() {
+            alert('Import Template functionality would allow uploading template files.');
+        }
+
+        function closeModal() {
+            document.getElementById('criteriaModal').style.display = 'none';
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4caf50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 2000;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function initializeAnimations() {
+            // Animate progress circles
+            setTimeout(() => {
+                const progressCircles = document.querySelectorAll('.progress-circle');
+                progressCircles.forEach(circle => {
+                    circle.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        circle.style.transform = 'scale(1)';
+                    }, 200);
+                });
+            }, 500);
+
+            // Animate quality gates
+            const gateCards = document.querySelectorAll('.gate-card');
+            gateCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+        }
+
+        function loadStoriesData() {
+            // Simulate loading stories data
+            setTimeout(() => {
+                updateCriteriaDetail('SESS-001');
+            }, 100);
+        }
+
+        // Add click handlers for criteria items
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.criteria-item')) {
+                toggleCriteria(e.target.closest('.criteria-item'));
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportCriteria();
+            }
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                generateReport();
+            }
+            if (e.ctrlKey && e.key === 't') {
+                e.preventDefault();
+                runTests();
+            }
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Auto-save functionality
+        setInterval(() => {
+            console.log('Auto-saving acceptance criteria...');
+            // In real implementation, this would save to backend
+        }, 30000);
+
+        // Real-time updates simulation
+        setInterval(() => {
+            // Simulate test status updates
+            const pendingTests = document.querySelectorAll('.test-status.test-pending');
+            if (pendingTests.length > 0 && Math.random() > 0.8) {
+                const randomTest = pendingTests[Math.floor(Math.random() * pendingTests.length)];
+                const passed = Math.random() > 0.3;
+                
+                randomTest.className = `test-status test-${passed ? 'passed' : 'failed'}`;
+                randomTest.textContent = passed ? 'PASSED' : 'FAILED';
+                
+                const checkbox = randomTest.closest('.criteria-item').querySelector('.criteria-checkbox');
+                checkbox.className = `criteria-checkbox ${passed ? 'checked' : 'failed'}`;
+                checkbox.textContent = getStatusIcon(passed ? 'checked' : 'failed');
+                
+                showNotification(`Test ${randomTest.closest('.criteria-item').querySelector('.criteria-description').textContent.substring(0, 30)}... ${passed ? 'PASSED' : 'FAILED'}`);
+            }
+        }, 15000);
+    </script>
+</body>
+</html>

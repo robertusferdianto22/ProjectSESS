@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SESS Stakeholder Register</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .section-content {
+            padding: 30px;
+        }
+
+        /* Power/Interest Grid */
+        .power-interest-grid {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f4f8 100%);
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .grid-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-lines::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #999;
+            transform: translateX(-50%);
+        }
+
+        .grid-lines::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #999;
+            transform: translateY(-50%);
+        }
+
+        .grid-labels {
+            position: absolute;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .label-power-high { top: 10px; left: 50%; transform: translateX(-50%); }
+        .label-power-low { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .label-interest-high { right: 10px; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; }
+        .label-interest-low { left: 10px; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; }
+
+        .quadrant-label {
+            position: absolute;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #555;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .quad-manage { top: 20px; right: 20px; color: #d32f2f; }
+        .quad-keep-satisfied { top: 20px; left: 20px; color: #f57c00; }
+        .quad-keep-informed { bottom: 20px; right: 20px; color: #388e3c; }
+        .quad-monitor { bottom: 20px; left: 20px; color: #1976d2; }
+
+        .stakeholder-dot {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .stakeholder-dot:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 20;
+        }
+
+        .stakeholder-dot:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* Stakeholder Cards */
+        .stakeholder-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stakeholder-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f4f8 100%);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stakeholder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stakeholder-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
+        .card-info h3 {
+            color: #1e3c72;
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .card-role {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .card-details {
+            margin-top: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        .power-level, .interest-level {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .level-bar {
+            width: 80px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-left: 10px;
+            overflow: hidden;
+        }
+
+        .level-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .level-high { background: #f44336; }
+        .level-medium { background: #ff9800; }
+        .level-low { background: #4caf50; }
+
+        .attitude {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .attitude-champion { background: #c8e6c9; color: #2e7d32; }
+        .attitude-supporter { background: #dcedc8; color: #558b2f; }
+        .attitude-neutral { background: #fff3e0; color: #f57c00; }
+        .attitude-skeptical { background: #ffcdd2; color: #d32f2f; }
+
+        .engagement-strategy {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #4caf50;
+        }
+
+        /* Communication Matrix */
+        .comm-matrix {
+            overflow-x: auto;
+        }
+
+        .comm-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .comm-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+        }
+
+        .comm-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comm-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .frequency-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .freq-daily { background: #ffebee; color: #c62828; }
+        .freq-weekly { background: #e8f5e8; color: #2e7d32; }
+        .freq-monthly { background: #e3f2fd; color: #1565c0; }
+        .freq-quarterly { background: #fff3e0; color: #ef6c00; }
+
+        /* Influence Network */
+        .influence-network {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: radial-gradient(circle at center, #f8f9ff 0%, #e8f4f8 100%);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .network-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .network-node:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .node-sponsor { background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%); }
+        .node-owner { background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%); }
+        .node-technical { background: linear-gradient(135deg, #388e3c 0%, #4caf50 100%); }
+        .node-users { background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%); }
+        .node-advisory { background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%); }
+        .node-vendor { background: linear-gradient(135deg, #455a64 0%, #607d8b 100%); }
+
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transform-origin: left center;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .stakeholder-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .power-interest-grid {
+                height: 400px;
+            }
+            
+            .stakeholder-dot {
+                width: 40px;
+                height: 40px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 STAKEHOLDER REGISTER</h1>
+            <p>Smart Exam Surveillance System (SESS) - Analisis & Strategi Engagement</p>
+        </div>
+
+        <!-- Power/Interest Grid -->
+        <div class="section">
+            <div class="section-header">🎯 Power vs Interest Matrix</div>
+            <div class="section-content">
+                <div class="power-interest-grid">
+                    <div class="grid-lines"></div>
+                    
+                    <!-- Grid Labels -->
+                    <div class="grid-labels label-power-high">HIGH POWER</div>
+                    <div class="grid-labels label-power-low">LOW POWER</div>
+                    <div class="grid-labels label-interest-high">HIGH INTEREST</div>
+                    <div class="grid-labels label-interest-low">LOW INTEREST</div>
+                    
+                    <!-- Quadrant Labels -->
+                    <div class="quadrant-label quad-manage">MANAGE CLOSELY</div>
+                    <div class="quadrant-label quad-keep-satisfied">KEEP SATISFIED</div>
+                    <div class="quadrant-label quad-keep-informed">KEEP INFORMED</div>
+                    <div class="quadrant-label quad-monitor">MONITOR</div>
+                    
+                    <!-- Stakeholder Dots -->
+                    <div class="stakeholder-dot" style="top: 20%; right: 15%; background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);">
+                        KS
+                        <div class="tooltip">Kepala Sekolah - Project Sponsor</div>
+                    </div>
+                    
+                    <div class="stakeholder-dot" style="top: 30%; right: 25%; background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%);">
+                        WK
+                        <div class="tooltip">Wakil Kepala Kurikulum - Product Owner</div>
+                    </div>
+                    
+                    <div class="stakeholder-dot" style="top: 35%; right: 30%; background: linear-gradient(135deg, #388e3c 0%, #4caf50 100%);">
+                        IT
+                        <div class="tooltip">IT Coordinator - Technical Lead</div>
+                    </div>
+                    
+                    <div class="stakeholder-dot" style="top: 45%; right: 35%; background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%);">
+                        GP
+                        <div class="tooltip">Guru Pengawas - End Users</div>
+                    </div>
+                    
+                    <div class="stakeholder-dot" style="top: 25%; left: 20%; background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);">
+                        KOM
+                        <div class="tooltip">Komite Sekolah - Advisory</div>
+                    </div>
+                    
+                    <div class="stakeholder-dot" style="top: 20%; right: 40%; background: linear-gradient(135deg, #455a64 0%, #607d8b 100%);">
+                        VEN
+                        <div class="tooltip">Technology Vendor - External</div>
+                    </div>
+                    
+                    <div class="stakeholder-dot" style="bottom: 30%; right: 25%; background: linear-gradient(135deg, #795548 0%, #8d6e63 100%);">
+                        SIS
+                        <div class="tooltip">Siswa - Indirect Users</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Stakeholder Cards -->
+        <div class="section">
+            <div class="section-header">👥 Detailed Stakeholder Analysis</div>
+            <div class="section-content">
+                <div class="stakeholder-cards">
+                    <!-- Kepala Sekolah -->
+                    <div class="stakeholder-card">
+                        <div class="card-header">
+                            <div class="stakeholder-avatar">KS</div>
+                            <div class="card-info">
+                                <h3>Kepala Sekolah</h3>
+                                <div class="card-role">Project Sponsor</div>
+                            </div>
+                        </div>
+                        <div class="card-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Power Level:</div>
+                                <div class="detail-value">
+                                    <div class="power-level">
+                                        Very High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 95%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Interest Level:</div>
+                                <div class="detail-value">
+                                    <div class="interest-level">
+                                        High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 85%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Current Attitude:</div>
+                                <div class="detail-value">
+                                    <span class="attitude attitude-supporter">Supporter</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Key Requirements:</div>
+                                <div class="detail-value">ROI yang jelas, minimal risk, reputasi sekolah terjaga</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Communication:</div>
+                                <div class="detail-value">Weekly executive briefing, major decision escalation</div>
+                            </div>
+                            <div class="engagement-strategy">
+                                <strong>Engagement Strategy:</strong> Keep closely informed, involve in key decisions, regular progress updates, emphasize strategic benefits
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wakil Kepala Kurikulum -->
+                    <div class="stakeholder-card">
+                        <div class="card-header">
+                            <div class="stakeholder-avatar">WK</div>
+                            <div class="card-info">
+                                <h3>Wakil Kepala Kurikulum</h3>
+                                <div class="card-role">Product Owner</div>
+                            </div>
+                        </div>
+                        <div class="card-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Power Level:</div>
+                                <div class="detail-value">
+                                    <div class="power-level">
+                                        High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 80%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Interest Level:</div>
+                                <div class="detail-value">
+                                    <div class="interest-level">
+                                        Very High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 95%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Current Attitude:</div>
+                                <div class="detail-value">
+                                    <span class="attitude attitude-champion">Champion</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Key Requirements:</div>
+                                <div class="detail-value">User-friendly system, accurate detection, minimal disruption</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Communication:</div>
+                                <div class="detail-value">Daily coordination, sprint reviews, requirement validation</div>
+                            </div>
+                            <div class="engagement-strategy">
+                                <strong>Engagement Strategy:</strong> Collaborate closely, involve in all major decisions, regular feedback sessions, empower as system champion
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IT Coordinator -->
+                    <div class="stakeholder-card">
+                        <div class="card-header">
+                            <div class="stakeholder-avatar">IT</div>
+                            <div class="card-info">
+                                <h3>IT Coordinator</h3>
+                                <div class="card-role">Technical Liaison</div>
+                            </div>
+                        </div>
+                        <div class="card-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Power Level:</div>
+                                <div class="detail-value">
+                                    <div class="power-level">
+                                        High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-medium" style="width: 75%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Interest Level:</div>
+                                <div class="detail-value">
+                                    <div class="interest-level">
+                                        High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 90%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Current Attitude:</div>
+                                <div class="detail-value">
+                                    <span class="attitude attitude-supporter">Supporter</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Key Requirements:</div>
+                                <div class="detail-value">System stability, easy maintenance, clear documentation</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Communication:</div>
+                                <div class="detail-value">Technical meetings, implementation updates, troubleshooting</div>
+                            </div>
+                            <div class="engagement-strategy">
+                                <strong>Engagement Strategy:</strong> Involve in technical decisions, provide comprehensive training, ensure knowledge transfer, ongoing support
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guru Pengawas -->
+                    <div class="stakeholder-card">
+                        <div class="card-header">
+                            <div class="stakeholder-avatar">GP</div>
+                            <div class="card-info">
+                                <h3>Guru Pengawas (10 orang)</h3>
+                                <div class="card-role">End Users</div>
+                            </div>
+                        </div>
+                        <div class="card-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Power Level:</div>
+                                <div class="detail-value">
+                                    <div class="power-level">
+                                        Medium
+                                        <div class="level-bar">
+                                            <div class="level-fill level-medium" style="width: 60%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Interest Level:</div>
+                                <div class="detail-value">
+                                    <div class="interest-level">
+                                        High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 85%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Current Attitude:</div>
+                                <div class="detail-value">
+                                    <span class="attitude attitude-neutral">Neutral</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Key Requirements:</div>
+                                <div class="detail-value">Ease of use, reliable alerts, doesn't complicate workflow</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Communication:</div>
+                                <div class="detail-value">Training sessions, feedback meetings, user support</div>
+                            </div>
+                            <div class="engagement-strategy">
+                                <strong>Engagement Strategy:</strong> Extensive training, address concerns, involve in testing, create user champions, continuous support
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Komite Sekolah -->
+                    <div class="stakeholder-card">
+                        <div class="card-header">
+                            <div class="stakeholder-avatar">KOM</div>
+                            <div class="card-info">
+                                <h3>Komite Sekolah</h3>
+                                <div class="card-role">Advisory Stakeholder</div>
+                            </div>
+                        </div>
+                        <div class="card-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Power Level:</div>
+                                <div class="detail-value">
+                                    <div class="power-level">
+                                        High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-medium" style="width: 70%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Interest Level:</div>
+                                <div class="detail-value">
+                                    <div class="interest-level">
+                                        Medium
+                                        <div class="level-bar">
+                                            <div class="level-fill level-medium" style="width: 65%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Current Attitude:</div>
+                                <div class="detail-value">
+                                    <span class="attitude attitude-skeptical">Skeptical</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Key Requirements:</div>
+                                <div class="detail-value">Privacy protection, ethical implementation, cost justification</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Communication:</div>
+                                <div class="detail-value">Monthly updates, policy briefings, privacy reports</div>
+                            </div>
+                            <div class="engagement-strategy">
+                                <strong>Engagement Strategy:</strong> Address privacy concerns early, transparent communication, involve in policy decisions, regular compliance updates
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technology Vendor -->
+                    <div class="stakeholder-card">
+                        <div class="card-header">
+                            <div class="stakeholder-avatar">VEN</div>
+                            <div class="card-info">
+                                <h3>Technology Vendor</h3>
+                                <div class="card-role">External Consultant</div>
+                            </div>
+                        </div>
+                        <div class="card-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Power Level:</div>
+                                <div class="detail-value">
+                                    <div class="power-level">
+                                        High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 85%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Interest Level:</div>
+                                <div class="detail-value">
+                                    <div class="interest-level">
+                                        Very High
+                                        <div class="level-bar">
+                                            <div class="level-fill level-high" style="width: 95%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Current Attitude:</div>
+                                <div class="detail-value">
+                                    <span class="attitude attitude-champion">Champion</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Key Requirements:</div>
+                                <div class="detail-value">Clear specifications, timeline adherence, payment terms</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Communication:</div>
+                                <div class="detail-value">Regular project meetings, technical reviews, milestone reports</div>
+                            </div>
+                            <div class="engagement-strategy">
+                                <strong>Engagement Strategy:</strong> Clear contract terms, regular technical reviews, milestone-based payments, knowledge transfer requirements
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication Matrix -->
+        <div class="section">
+            <div class="section-header">📞 Communication Matrix</div>
+            <div class="section-content">
+                <div class="comm-matrix">
+                    <table class="comm-table">
+                        <thead>
+                            <tr>
+                                <th>Stakeholder</th>
+                                <th>Information Needs</th>
+                                <th>Communication Method</th>
+                                <th>Frequency</th>
+                                <th>Responsible</th>
+                                <th>Success Metrics</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Kepala Sekolah</strong></td>
+                                <td>Progress, budget, major risks, ROI</td>
+                                <td>Executive briefing, dashboard</td>
+                                <td><span class="frequency-tag freq-weekly">Weekly</span></td>
+                                <td>Project Manager</td>
+                                <td>Decision speed, satisfaction score</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Wakil Kepala Kurikulum</strong></td>
+                                <td>Requirements, features, testing results</td>
+                                <td>Daily standups, sprint reviews</td>
+                                <td><span class="frequency-tag freq-daily">Daily</span></td>
+                                <td>Scrum Master</td>
+                                <td>Requirements clarity, approval rate</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IT Coordinator</strong></td>
+                                <td>Technical specs, infrastructure, support</td>
+                                <td>Technical meetings, documentation</td>
+                                <td><span class="frequency-tag freq-weekly">Weekly</span></td>
+                                <td>Technical Lead</td>
+                                <td>System stability, maintenance readiness</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Guru Pengawas</strong></td>
+                                <td>Training, usage guides, support</td>
+                                <td>Training sessions, user forums</td>
+                                <td><span class="frequency-tag freq-monthly">Monthly</span></td>
+                                <td>Training Coordinator</td>
+                                <td>Training completion, user satisfaction</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Komite Sekolah</strong></td>
+                                <td>Privacy policies, compliance, ethics</td>
+                                <td>Reports, policy briefings</td>
+                                <td><span class="frequency-tag freq-quarterly">Quarterly</span></td>
+                                <td>Compliance Officer</td>
+                                <td>Policy approval, compliance audit</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Technology Vendor</strong></td>
+                                <td>Requirements, feedback, payments</td>
+                                <td>Project meetings, technical reviews</td>
+                                <td><span class="frequency-tag freq-weekly">Weekly</span></td>
+                                <td>Project Manager</td>
+                                <td>Milestone completion, quality deliverables</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Influence Network -->
+        <div class="section">
+            <div class="section-header">🌐 Stakeholder Influence Network</div>
+            <div class="section-content">
+                <div class="influence-network">
+                    <!-- Central Sponsor -->
+                    <div class="network-node node-sponsor" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                        Kepala<br>Sekolah
+                    </div>
+                    
+                    <!-- Product Owner -->
+                    <div class="network-node node-owner" style="top: 20%; left: 30%;">
+                        Wakil<br>Kepala
+                    </div>
+                    
+                    <!-- Technical -->
+                    <div class="network-node node-technical" style="top: 20%; right: 30%;">
+                        IT<br>Coord
+                    </div>
+                    
+                    <!-- Users -->
+                    <div class="network-node node-users" style="bottom: 20%; left: 20%;">
+                        Guru<br>Pengawas
+                    </div>
+                    
+                    <!-- Advisory -->
+                    <div class="network-node node-advisory" style="bottom: 20%; right: 20%;">
+                        Komite<br>Sekolah
+                    </div>
+                    
+                    <!-- Vendor -->
+                    <div class="network-node node-vendor" style="top: 50%; right: 10%;">
+                        Tech<br>Vendor
+                    </div>
+                    
+                    <!-- Connection Lines -->
+                    <div class="connection-line" style="top: 50%; left: 50%; width: 150px; transform: translate(-50%, -50%) rotate(-45deg);"></div>
+                    <div class="connection-line" style="top: 50%; left: 50%; width: 150px; transform: translate(-50%, -50%) rotate(45deg);"></div>
+                    <div class="connection-line" style="top: 50%; left: 50%; width: 200px; transform: translate(-50%, -50%) rotate(-20deg);"></div>
+                    <div class="connection-line" style="top: 50%; left: 50%; width: 200px; transform: translate(-50%, -50%) rotate(20deg);"></div>
+                    <div class="connection-line" style="top: 50%; left: 50%; width: 100px; transform: translate(-50%, -50%) rotate(0deg);"></div>
+                </div>
+                <div style="margin-top: 20px; text-align: center; color: #666;">
+                    <strong>Network Analysis:</strong> Kepala Sekolah sebagai central hub dengan influence tinggi ke semua stakeholder. 
+                    Wakil Kepala Kurikulum dan IT Coordinator sebagai key implementers dengan direct access ke end users.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactive tooltips and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate level bars
+            const levelBars = document.querySelectorAll('.level-fill');
+            levelBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+
+            // Add click handlers for stakeholder dots
+            const dots = document.querySelectorAll('.stakeholder-dot');
+            dots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const tooltip = this.querySelector('.tooltip');
+                    if (tooltip) {
+                        alert(tooltip.textContent);
+                    }
+                });
+            });
+
+            // Animate network nodes
+            const networkNodes = document.querySelectorAll('.network-node');
+            networkNodes.forEach((node, index) => {
+                node.style.opacity = '0';
+                node.style.transform += ' scale(0.5)';
+                setTimeout(() => {
+                    node.style.transition = 'all 0.5s ease';
+                    node.style.opacity = '1';
+                    node.style.transform = node.style.transform.replace('scale(0.5)', 'scale(1)');
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
